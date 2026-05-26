@@ -46,7 +46,7 @@ def get_whisper_model():
 
         print("Loading Whisper model...")
 
-        WHISPER_MODEL = whisper.load_model("small")
+        WHISPER_MODEL = whisper.load_model("base")
 
     return WHISPER_MODEL
 
