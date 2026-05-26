@@ -6,6 +6,22 @@ let selectedFormat = "youtube"
 const audioInput = document.getElementById("audio")
 const bgInput = document.getElementById("bg")
 
+function updateEta() {
+    const etaText = document.getElementById("etaText")
+
+    if (selectedFormat === "youtube") {
+        etaText.innerText = "1–3 minutes"
+    }
+
+    else if (selectedFormat === "square") {
+        etaText.innerText = "2–4 minutes"
+    }
+
+    else if (selectedFormat === "tiktok") {
+        etaText.innerText = "3–6 minutes"
+    }
+}
+
 function selectFormat(format) {
     selectedFormat = format
 
@@ -14,6 +30,8 @@ function selectFormat(format) {
     document.getElementById("format-square").classList.remove("active")
 
     document.getElementById("format-" + format).classList.add("active")
+
+    updateEta()
 }
 
 audioInput.addEventListener("change", () => {
@@ -31,7 +49,11 @@ bgInput.addEventListener("change", () => {
         const reader = new FileReader()
 
         reader.onload = function(e) {
-            document.getElementById("preview").innerHTML =
+            const preview = document.getElementById("preview")
+
+            preview.style.display = "block"
+
+            preview.innerHTML =
                 `<img src="${e.target.result}">`
         }
 
@@ -103,7 +125,9 @@ async function generate() {
             return
         }
 
-        document.getElementById("status").innerText = "Uploading files..."
+        document.getElementById("status").innerText =
+            "Uploading files... Estimated time: " + document.getElementById("etaText").innerText
+
         document.getElementById("download").innerHTML = ""
 
         setProgress(5)
@@ -113,7 +137,7 @@ async function generate() {
         form.append("background", bg)
         form.append("video_format", selectedFormat)
 
-        const response = await fetch("http://127.0.0.1:8000/generate", {
+        const response = await fetch("/generate", {
             method: "POST",
             body: form
         })
@@ -127,7 +151,9 @@ async function generate() {
 
         currentJobId = data.job_id
 
-        document.getElementById("status").innerText = "Queued..."
+        document.getElementById("status").innerText =
+            "Queued... Estimated time: " + document.getElementById("etaText").innerText
+
         setProgress(10)
 
         startFakeProgress()
@@ -147,23 +173,27 @@ async function checkStatus() {
     try {
         if (!currentJobId) return
 
-        const response = await fetch(`http://127.0.0.1:8000/status/${currentJobId}`)
+        const response = await fetch(`/status/${currentJobId}`)
         const data = await response.json()
 
         if (data.status === "queued") {
-            document.getElementById("status").innerText = "Queued..."
+            document.getElementById("status").innerText =
+                "Queued... Estimated time: " + document.getElementById("etaText").innerText
+
             setTimeout(checkStatus, 2000)
         }
 
         else if (data.status === "transcribing") {
             document.getElementById("status").innerText =
                 "AI is reading lyrics automatically..."
+
             setTimeout(checkStatus, 2000)
         }
 
         else if (data.status === "rendering") {
             document.getElementById("status").innerText =
                 "Rendering cinematic lyric video..."
+
             setTimeout(checkStatus, 2000)
         }
 
@@ -202,3 +232,5 @@ async function checkStatus() {
         console.error(error)
     }
 }
+
+updateEta()
