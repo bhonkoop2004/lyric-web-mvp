@@ -77,18 +77,44 @@ def transcribe_audio(audio_path):
 
     for segment in result.get("segments", []):
 
-        for w in segment.get("words", []):
+        segment_words = segment.get("words", [])
 
-            word_text = w.get("word", "").strip()
+        if segment_words:
 
-            if not word_text:
+            for w in segment_words:
+
+                word_text = w.get("word", "").strip()
+
+                if not word_text:
+                    continue
+
+                words.append({
+                    "word": word_text,
+                    "start": float(w["start"]),
+                    "end": float(w["end"])
+                })
+
+        else:
+
+            raw_words = segment.get("text", "").strip().split()
+
+            if not raw_words:
                 continue
 
-            words.append({
-                "word": word_text,
-                "start": float(w["start"]),
-                "end": float(w["end"])
-            })
+            start = float(segment.get("start", 0))
+            end = float(segment.get("end", 0))
+
+            duration = max(0.1, end - start)
+
+            word_duration = duration / len(raw_words)
+
+            for i, word in enumerate(raw_words):
+
+                words.append({
+                    "word": word,
+                    "start": start + i * word_duration,
+                    "end": start + (i + 1) * word_duration
+                })
 
     print("Total lyric words:", len(words))
 
