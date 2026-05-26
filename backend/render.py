@@ -1,4 +1,5 @@
-from moviepy.editor import *
+from moviepy.editor import AudioFileClip
+from moviepy.video.VideoClip import VideoClip
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import numpy as np
 import random
@@ -58,19 +59,11 @@ def transcribe_audio(audio_path):
 
     result = model.transcribe(
         audio_path,
-        language="nl",
+        language=None,
         task="transcribe",
         word_timestamps=True,
         fp16=False,
-        initial_prompt=(
-            "Dit is een Nederlands rapnummer met straattaal, slang en jongerentaal. "
-            "Transcribeer letterlijk wat er gezegd wordt. "
-            "Vertaal niets naar Engels of Duits. "
-            "Behoud Nederlandse straattaal zoals: bro, broer, mattie, do, doekoe, "
-            "osso, skeer, fissa, kaulo, kanker, wollah, sahbi, niffo, strijder, "
-            "drerrie, pokoe, barkie, stack, stacks, money, cash, gang, vibe, baddie. "
-            "Gebruik de originele woorden zoals gezongen."
-        )
+        
     )
 
     words = []
