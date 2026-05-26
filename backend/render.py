@@ -4,6 +4,10 @@ import numpy as np
 import random
 import whisper
 
+# =========================================================
+# CONFIG
+# =========================================================
+
 FPS = 24
 
 FONT_SIZE = 72
@@ -17,6 +21,10 @@ PARTICLE_COUNT = 25
 
 WHISPER_MODEL = None
 
+# =========================================================
+# FONT
+# =========================================================
+
 try:
     font = ImageFont.truetype(
         "C:/Windows/Fonts/arialbd.ttf",
@@ -25,6 +33,10 @@ try:
 except:
     font = ImageFont.load_default()
 
+
+# =========================================================
+# VIDEO SIZE
+# =========================================================
 
 def get_video_size(video_format):
 
@@ -36,6 +48,10 @@ def get_video_size(video_format):
 
     return 1280, 720
 
+
+# =========================================================
+# WHISPER
+# =========================================================
 
 def get_whisper_model():
 
@@ -73,53 +89,63 @@ def transcribe_audio(audio_path):
         )
     )
 
-    words = []
+    lyrics = []
 
     for segment in result.get("segments", []):
 
-        segment_words = segment.get("words", [])
+        word_items = segment.get("words", [])
 
-        if segment_words:
+        # normal working mode: Whisper gives real word timestamps
+        if word_items:
 
-            for w in segment_words:
+            for item in word_items:
 
-                word_text = w.get("word", "").strip()
+                word_text = item.get("word", "").strip()
 
                 if not word_text:
                     continue
 
-                words.append({
+                lyrics.append({
                     "word": word_text,
-                    "start": float(w["start"]),
-                    "end": float(w["end"])
+                    "start": float(item["start"]),
+                    "end": float(item["end"])
                 })
 
+        # safety fallback: if Railway/Whisper gives only segment text
         else:
 
-            raw_words = segment.get("text", "").strip().split()
+            text = segment.get("text", "").strip()
+
+            if not text:
+                continue
+
+            raw_words = text.split()
 
             if not raw_words:
                 continue
 
             start = float(segment.get("start", 0))
-            end = float(segment.get("end", 0))
+            end = float(segment.get("end", start + 1))
 
-            duration = max(0.1, end - start)
-
-            word_duration = duration / len(raw_words)
+            total_duration = max(0.1, end - start)
+            word_duration = total_duration / len(raw_words)
 
             for i, word in enumerate(raw_words):
 
-                words.append({
+                lyrics.append({
                     "word": word,
                     "start": start + i * word_duration,
                     "end": start + (i + 1) * word_duration
                 })
 
-    print("Total lyric words:", len(words))
+    print("Total lyric words:", len(lyrics))
 
-    return words
+    return lyrics
 
+
+# =========================================================
+# MAIN RENDER FUNCTION
+# =========================================================
 
 def render_video(
     audio_path,
@@ -135,7 +161,21 @@ def render_video(
 
     lyrics = transcribe_audio(audio_path)
 
+    if len(lyrics) == 0:
+
+        print("WARNING: No lyrics found.")
+
+        lyrics = [{
+            "word": "Lyrics unavailable",
+            "start": 0,
+            "end": min(5, audio.duration)
+        }]
+
     bg_original = Image.open(bg_path).convert("RGB")
+
+    # =====================================================
+    # PRE-RENDER STATIC BACKGROUND
+    # =====================================================
 
     base = bg_original.resize((W, H)).convert("RGBA")
 
@@ -156,50 +196,65 @@ def render_video(
         overlay
     )
 
-    for i, w in enumerate(lyrics):
+    # =====================================================
+    # TIMING FIX
+    # =====================================================
 
-        dur = w["end"] - w["start"]
+    for i, word in enumerate(lyrics):
 
-        if dur < 0.22:
+        word_duration = word["end"] - word["start"]
 
-            w["end"] += 0.08
+        if word_duration < 0.22:
+
+            word["end"] += 0.08
 
             if i < len(lyrics) - 1:
 
-                nxt = lyrics[i + 1]["start"]
+                next_start = lyrics[i + 1]["start"]
 
-                if w["end"] > nxt:
-                    w["end"] = nxt - 0.01
+                if word["end"] > next_start:
+                    word["end"] = next_start - 0.01
 
-    def split_sentences(words):
+    # =====================================================
+    # SMART SENTENCE SPLIT
+    # =====================================================
+
+    def smart_split(words):
 
         sentences = []
 
         current = []
-        chars = 0
+        current_chars = 0
 
-        for i, w in enumerate(words):
+        for i, item in enumerate(words):
 
-            current.append(w)
+            word = item.get("word", "")
 
-            chars += len(w["word"]) + 1
+            if not word:
+                continue
+
+            current.append(item)
+            current_chars += len(word) + 1
 
             is_last = i == len(words) - 1
 
-            gap = (
-                words[i + 1]["start"] - w["end"]
-                if not is_last else 0
-            )
+            if not is_last:
+                gap = words[i + 1]["start"] - item["end"]
+            else:
+                gap = 0
 
             should_split = False
 
-            if len(current) >= MAX_WORDS:
-                should_split = True
-
-            elif chars >= MAX_CHARS:
+            if word.endswith((".", "!", "?")):
                 should_split = True
 
             elif gap > 0.45:
+                should_split = True
+
+            elif len(current) >= MAX_WORDS:
+                should_split = True
+
+            elif current_chars >= MAX_CHARS:
                 should_split = True
 
             elif is_last:
@@ -210,11 +265,15 @@ def render_video(
                 sentences.append(current)
 
                 current = []
-                chars = 0
+                current_chars = 0
 
         return sentences
 
-    sentences = split_sentences(lyrics)
+    sentences = smart_split(lyrics)
+
+    # =====================================================
+    # PARTICLES
+    # =====================================================
 
     random.seed(10)
 
@@ -229,20 +288,35 @@ def render_video(
             "size": random.randint(1, 2)
         })
 
+    # =====================================================
+    # COLORS
+    # =====================================================
+
     def lerp(a, b, t):
         return int(a + (b - a) * t)
 
-    def color(progress):
+    def smooth_color(progress):
+
+        white = (255, 255, 255)
+        pink = (255, 60, 180)
 
         return (
-            lerp(255, 255, progress),
-            lerp(255, 60, progress),
-            lerp(255, 180, progress)
+            lerp(white[0], pink[0], progress),
+            lerp(white[1], pink[1], progress),
+            lerp(white[2], pink[2], progress)
         )
+
+    # =====================================================
+    # FRAME FUNCTION
+    # =====================================================
 
     def make_frame(t):
 
         frame = static_bg.copy()
+
+        # -------------------------------------------------
+        # PARTICLES
+        # -------------------------------------------------
 
         particle_layer = Image.new(
             "RGBA",
@@ -250,7 +324,7 @@ def render_video(
             (0, 0, 0, 0)
         )
 
-        pd = ImageDraw.Draw(particle_layer)
+        particle_draw = ImageDraw.Draw(particle_layer)
 
         for p in particles:
 
@@ -258,7 +332,7 @@ def render_video(
                 p["y"] - t * p["speed"] * 8
             ) % H
 
-            pd.ellipse(
+            particle_draw.ellipse(
                 (
                     p["x"],
                     py,
@@ -279,6 +353,10 @@ def render_video(
 
         draw = ImageDraw.Draw(frame)
 
+        # -------------------------------------------------
+        # LYRICS
+        # -------------------------------------------------
+
         for sentence in sentences:
 
             start = sentence[0]["start"]
@@ -288,100 +366,105 @@ def render_video(
                 continue
 
             lines = []
-
-            current = []
+            current_line = []
 
             words_per_line = 3 if video_format == "tiktok" else 4
 
-            for w in sentence:
+            for word in sentence:
 
-                current.append(w)
+                current_line.append(word)
 
-                if len(current) >= words_per_line:
+                if len(current_line) >= words_per_line:
 
-                    lines.append(current)
+                    lines.append(current_line)
 
-                    current = []
+                    current_line = []
 
-            if current:
-                lines.append(current)
+            if current_line:
+                lines.append(current_line)
 
-            total_h = len(lines) * LINE_HEIGHT
+            total_height = len(lines) * LINE_HEIGHT
 
-            y0 = (H - total_h) // 2
+            y_start = (H - total_height) // 2
 
             if video_format == "tiktok":
-                y0 = int(H * 0.48) - total_h // 2
+                y_start = int(H * 0.48) - total_height // 2
 
             positions = []
 
+            # layout
             for li, line in enumerate(lines):
 
-                txt = " ".join(
+                line_text = " ".join(
                     [w["word"] for w in line]
                 )
 
                 bbox = draw.textbbox(
                     (0, 0),
-                    txt,
+                    line_text,
                     font=font
                 )
 
-                tw = bbox[2] - bbox[0]
+                text_width = bbox[2] - bbox[0]
 
-                x = (W - tw) // 2
+                x = (W - text_width) // 2
+                y = y_start + li * LINE_HEIGHT
 
-                y = y0 + li * LINE_HEIGHT
-
-                for w in line:
+                for word in line:
 
                     positions.append((x, y))
 
                     bbox = draw.textbbox(
                         (0, 0),
-                        w["word"] + " ",
+                        word["word"] + " ",
                         font=font
                     )
 
                     x += bbox[2] - bbox[0]
 
-            active = -1
+            active_word = -1
 
-            for i, w in enumerate(sentence):
+            for i, word in enumerate(sentence):
 
-                if w["start"] <= t <= w["end"]:
+                if word["start"] <= t <= word["end"]:
 
-                    active = i
+                    active_word = i
                     break
 
-            for i, w in enumerate(sentence):
+            for i, word in enumerate(sentence):
 
                 x, y = positions[i]
 
-                txt = w["word"] + " "
+                text = word["word"] + " "
 
-                progress = 1 if i == active else 0
+                progress = 1 if i == active_word else 0
 
-                c = color(progress)
+                color = smooth_color(progress)
 
+                # text shadow
                 draw.text(
                     (
                         x + SHADOW_OFFSET,
                         y + SHADOW_OFFSET
                     ),
-                    txt,
+                    text,
                     font=font,
                     fill=(0, 0, 0)
                 )
 
+                # main text
                 draw.text(
                     (x, y),
-                    txt,
+                    text,
                     font=font,
-                    fill=c
+                    fill=color
                 )
 
         return np.array(frame.convert("RGB"))
+
+    # =====================================================
+    # EXPORT
+    # =====================================================
 
     video = VideoClip(
         make_frame,
