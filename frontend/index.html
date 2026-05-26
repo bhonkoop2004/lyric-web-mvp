@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lyric Video Generator</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0f0f0f;
+            color: white;
+            min-height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            padding: 40px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 760px;
+
+            background: #181818;
+            border-radius: 28px;
+
+            padding: 40px;
+
+            box-shadow:
+                0 0 40px rgba(255,20,147,0.15);
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #aaa;
+            margin-bottom: 35px;
+            line-height: 1.6;
+        }
+
+        .format-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .format-card {
+            border: 2px solid #333;
+            border-radius: 18px;
+            padding: 18px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.25s ease;
+            background: #111;
+        }
+
+        .format-card:hover {
+            border-color: #ff1493;
+            background: rgba(255,20,147,0.06);
+        }
+
+        .format-card.active {
+            border-color: #ff1493;
+            box-shadow: 0 0 25px rgba(255,20,147,0.25);
+            background: rgba(255,20,147,0.12);
+        }
+
+        .format-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .format-sub {
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        .upload-box {
+            border: 2px dashed #444;
+            border-radius: 22px;
+
+            padding: 35px;
+            margin-bottom: 25px;
+
+            transition: 0.25s ease;
+
+            text-align: center;
+
+            cursor: pointer;
+        }
+
+        .upload-box:hover {
+            border-color: #ff1493;
+            background: rgba(255,20,147,0.05);
+        }
+
+        .upload-box.dragover {
+            border-color: #ff1493;
+            background: rgba(255,20,147,0.12);
+        }
+
+        .upload-title {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .upload-sub {
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        input[type=file] {
+            display: none;
+        }
+
+        .filename {
+            margin-top: 15px;
+            color: #ff9bd2;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            border: none;
+            border-radius: 18px;
+
+            background: linear-gradient(
+                90deg,
+                #ff1493,
+                #ff5ab7
+            );
+
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+
+            padding: 18px;
+
+            cursor: pointer;
+
+            transition: 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            opacity: 0.95;
+        }
+
+        .status-box {
+            margin-top: 30px;
+        }
+
+        .status-text {
+            margin-bottom: 12px;
+            color: #ddd;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 26px;
+            background: #2a2a2a;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+
+            background: linear-gradient(
+                90deg,
+                #ff1493,
+                #ff7cc8
+            );
+
+            transition: width 0.4s ease;
+        }
+
+        .progress-text {
+            margin-top: 10px;
+            color: #bbb;
+            font-size: 14px;
+        }
+
+        .download {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .download a {
+            display: inline-block;
+
+            padding: 14px 28px;
+            border-radius: 16px;
+
+            background: #ff1493;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+
+            transition: 0.2s ease;
+        }
+
+        .download a:hover {
+            transform: scale(1.03);
+        }
+
+        .preview {
+            margin-top: 20px;
+            margin-bottom: 25px;
+
+            border-radius: 18px;
+            overflow: hidden;
+        }
+
+        .preview img {
+            width: 100%;
+            max-height: 240px;
+
+            object-fit: cover;
+
+            display: block;
+
+            border-radius: 18px;
+
+            box-shadow:
+                0 0 30px rgba(255,20,147,0.2);
+        }
+
+        @media (max-width: 700px) {
+            .format-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>🎬 Lyric Video Generator</h1>
+
+    <div class="subtitle">
+        Upload your song and artwork.<br>
+        AI automatically creates cinematic synced lyric videos.
+    </div>
+
+    <h3>Choose video format</h3>
+
+    <div class="format-grid">
+
+        <div class="format-card active" onclick="selectFormat('youtube')" id="format-youtube">
+            <div class="format-title">YouTube</div>
+            <div class="format-sub">16:9 · 1280x720</div>
+        </div>
+
+        <div class="format-card" onclick="selectFormat('tiktok')" id="format-tiktok">
+            <div class="format-title">TikTok / Reels</div>
+            <div class="format-sub">9:16 · 1080x1920</div>
+        </div>
+
+        <div class="format-card" onclick="selectFormat('square')" id="format-square">
+            <div class="format-title">Square</div>
+            <div class="format-sub">1:1 · 1080x1080</div>
+        </div>
+
+    </div>
+
+    <label class="upload-box" id="audioBox">
+
+        <div class="upload-title">
+            🎵 Upload Song
+        </div>
+
+        <div class="upload-sub">
+            MP3 audio file
+        </div>
+
+        <div class="filename" id="audioName">
+            No file selected
+        </div>
+
+        <input type="file" id="audio" accept=".mp3">
+
+    </label>
+
+    <label class="upload-box" id="bgBox">
+
+        <div class="upload-title">
+            🖼 Upload Background
+        </div>
+
+        <div class="upload-sub">
+            JPG or PNG image
+        </div>
+
+        <div class="filename" id="bgName">
+            No file selected
+        </div>
+
+        <input type="file" id="bg" accept=".jpg,.jpeg,.png">
+
+    </label>
+
+    <div class="preview" id="preview"></div>
+
+    <button onclick="generate()">
+        Generate Cinematic Video
+    </button>
+
+    <div class="status-box">
+
+        <div class="status-text" id="status">
+            Waiting...
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="progress-text" id="progressText">
+            0%
+        </div>
+
+    </div>
+
+    <div class="download" id="download"></div>
+
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>

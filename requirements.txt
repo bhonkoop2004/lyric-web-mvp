@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-multipart
+moviepy
+pillow
+numpy
+openai-whisper
+imageio
+imageio-ffmpeg
