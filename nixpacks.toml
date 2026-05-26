@@ -1,7 +1,2 @@
-Remove-Item -Recurse -Force .git
-git init
-git add .
-git commit -m "clean railway deploy"
-git branch -M main
-git remote add origin https://github.com/bhonkoop2004/lyric-web-mvp.git
-git push -f origin main
+[phases.setup]
+nixPkgs = ["ffmpeg"]
