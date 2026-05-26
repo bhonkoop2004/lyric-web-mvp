@@ -3,6 +3,11 @@ let fakeProgress = 0
 let progressTimer = null
 let selectedFormat = "youtube"
 
+const API_BASE =
+    window.location.protocol === "file:"
+        ? "https://lyricgenerator.net"
+        : ""
+
 const audioInput = document.getElementById("audio")
 const bgInput = document.getElementById("bg")
 
@@ -11,13 +16,9 @@ function updateEta() {
 
     if (selectedFormat === "youtube") {
         etaText.innerText = "1–3 minutes"
-    }
-
-    else if (selectedFormat === "square") {
+    } else if (selectedFormat === "square") {
         etaText.innerText = "2–4 minutes"
-    }
-
-    else if (selectedFormat === "tiktok") {
+    } else if (selectedFormat === "tiktok") {
         etaText.innerText = "3–6 minutes"
     }
 }
@@ -50,11 +51,8 @@ bgInput.addEventListener("change", () => {
 
         reader.onload = function(e) {
             const preview = document.getElementById("preview")
-
             preview.style.display = "block"
-
-            preview.innerHTML =
-                `<img src="${e.target.result}">`
+            preview.innerHTML = `<img src="${e.target.result}">`
         }
 
         reader.readAsDataURL(bgInput.files[0])
@@ -62,7 +60,6 @@ bgInput.addEventListener("change", () => {
 })
 
 function setupDrag(boxId, inputId) {
-
     const box = document.getElementById(boxId)
     const input = document.getElementById(inputId)
 
@@ -77,11 +74,8 @@ function setupDrag(boxId, inputId) {
 
     box.addEventListener("drop", (e) => {
         e.preventDefault()
-
         box.classList.remove("dragover")
-
         input.files = e.dataTransfer.files
-
         input.dispatchEvent(new Event("change"))
     })
 }
@@ -91,9 +85,9 @@ setupDrag("bgBox", "bg")
 
 function setProgress(value) {
     fakeProgress = Math.min(value, 100)
-
     document.getElementById("progressBar").style.width = fakeProgress + "%"
-    document.getElementById("progressText").innerText = Math.floor(fakeProgress) + "%"
+    document.getElementById("progressText").innerText =
+        Math.floor(fakeProgress) + "%"
 }
 
 function startFakeProgress() {
@@ -126,7 +120,8 @@ async function generate() {
         }
 
         document.getElementById("status").innerText =
-            "Uploading files... Estimated time: " + document.getElementById("etaText").innerText
+            "Uploading files... Estimated time: " +
+            document.getElementById("etaText").innerText
 
         document.getElementById("download").innerHTML = ""
 
@@ -137,7 +132,7 @@ async function generate() {
         form.append("background", bg)
         form.append("video_format", selectedFormat)
 
-        const response = await fetch("/generate", {
+        const response = await fetch(API_BASE + "/generate", {
             method: "POST",
             body: form
         })
@@ -152,7 +147,8 @@ async function generate() {
         currentJobId = data.job_id
 
         document.getElementById("status").innerText =
-            "Queued... Estimated time: " + document.getElementById("etaText").innerText
+            "Queued... Estimated time: " +
+            document.getElementById("etaText").innerText
 
         setProgress(10)
 
@@ -173,12 +169,19 @@ async function checkStatus() {
     try {
         if (!currentJobId) return
 
-        const response = await fetch(`/status/${currentJobId}`)
+        const response = await fetch(API_BASE + `/status/${currentJobId}`)
+
+        if (!response.ok) {
+            const text = await response.text()
+            throw new Error(text)
+        }
+
         const data = await response.json()
 
         if (data.status === "queued") {
             document.getElementById("status").innerText =
-                "Queued... Estimated time: " + document.getElementById("etaText").innerText
+                "Queued... Estimated time: " +
+                document.getElementById("etaText").innerText
 
             setTimeout(checkStatus, 2000)
         }
