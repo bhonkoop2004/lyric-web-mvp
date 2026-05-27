@@ -7,11 +7,11 @@ import whisper
 
 FPS = 24
 
-FONT_SIZE = 72
-LINE_HEIGHT = 90
+FONT_SIZE = 110
+LINE_HEIGHT = 120
 
-MAX_WORDS = 7
-MAX_CHARS = 34
+MAX_WORDS = 4
+MAX_CHARS = 22
 
 SHADOW_OFFSET = 4
 PARTICLE_COUNT = 25
@@ -258,7 +258,7 @@ def render_video(
 
             current = []
 
-            words_per_line = 3 if video_format == "tiktok" else 4
+            words_per_line = 2 if video_format == "tiktok" else 3
 
             for w in sentence:
 
@@ -278,7 +278,7 @@ def render_video(
             y0 = (H - total_h) // 2
 
             if video_format == "tiktok":
-                y0 = int(H * 0.48) - total_h // 2
+                y0 = int(H * 0.70) - total_h // 2
 
             positions = []
 
