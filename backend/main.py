@@ -25,19 +25,11 @@ OUTPUT_DIR = "backend/outputs"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# =========================================================
-# STATIC FILES
-# =========================================================
-
 app.mount("/outputs", StaticFiles(directory=OUTPUT_DIR), name="outputs")
-
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 jobs = {}
 
-# =========================================================
-# FRONTEND WEBSITE
-# =========================================================
 
 @app.get("/")
 def homepage():
@@ -49,20 +41,17 @@ def app_js():
     return FileResponse("frontend/app.js")
 
 
-# =========================================================
-# RENDER JOB
-# =========================================================
-
 def run_render_job(
     job_id,
     audio_path,
     bg_path,
     output_path,
     video_format,
-    lyric_language
+    lyric_language,
+    lyric_color,
+    font_style
 ):
     try:
-
         jobs[job_id]["status"] = "transcribing"
 
         render_video(
@@ -70,26 +59,19 @@ def run_render_job(
             bg_path,
             output_path,
             video_format,
-            lyric_language
+            lyric_language,
+            lyric_color,
+            font_style
         )
 
         jobs[job_id]["status"] = "done"
-
-        jobs[job_id]["video_url"] = (
-            f"/outputs/{job_id}.mp4"
-        )
+        jobs[job_id]["video_url"] = f"/outputs/{job_id}.mp4"
 
     except Exception as e:
-
         jobs[job_id]["status"] = "error"
         jobs[job_id]["error"] = str(e)
-
         print(traceback.format_exc())
 
-
-# =========================================================
-# GENERATE ENDPOINT
-# =========================================================
 
 @app.post("/generate")
 async def generate(
@@ -97,14 +79,14 @@ async def generate(
     audio: UploadFile,
     background: UploadFile,
     video_format: str = Form("youtube"),
-    lyric_language: str = Form("auto")
+    lyric_language: str = Form("auto"),
+    lyric_color: str = Form("pink"),
+    font_style: str = Form("bold")
 ):
-
     job_id = str(uuid.uuid4())
 
     audio_path = f"{UPLOAD_DIR}/{job_id}.mp3"
     bg_path = f"{UPLOAD_DIR}/{job_id}.jpg"
-
     output_path = f"{OUTPUT_DIR}/{job_id}.mp4"
 
     with open(audio_path, "wb") as f:
@@ -126,7 +108,9 @@ async def generate(
         bg_path,
         output_path,
         video_format,
-        lyric_language
+        lyric_language,
+        lyric_color,
+        font_style
     )
 
     return {
@@ -134,15 +118,9 @@ async def generate(
     }
 
 
-# =========================================================
-# STATUS ENDPOINT
-# =========================================================
-
 @app.get("/status/{job_id}")
 def status(job_id: str):
-
     if job_id not in jobs:
-
         return {
             "status": "not_found"
         }

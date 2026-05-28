@@ -56,7 +56,7 @@ function formatTime(seconds) {
 
 function getTimeLeftText() {
     if (!renderStartedAt) {
-        return ""
+        return " · calculating..."
     }
 
     const elapsed = (Date.now() - renderStartedAt) / 1000
@@ -117,11 +117,8 @@ function setupDrag(boxId, inputId) {
 
     box.addEventListener("drop", (e) => {
         e.preventDefault()
-
         box.classList.remove("dragover")
-
         input.files = e.dataTransfer.files
-
         input.dispatchEvent(new Event("change"))
     })
 }
@@ -132,7 +129,8 @@ setupDrag("bgBox", "bg")
 function setProgress(value) {
     fakeProgress = Math.min(value, 100)
 
-    document.getElementById("progressBar").style.width = fakeProgress + "%"
+    document.getElementById("progressBar").style.width =
+        fakeProgress + "%"
 
     document.getElementById("progressText").innerText =
         Math.floor(fakeProgress) + "%" + getTimeLeftText()
@@ -160,7 +158,6 @@ function stopProgressDone() {
     clearInterval(progressTimer)
 
     renderStartedAt = null
-
     fakeProgress = 100
 
     document.getElementById("progressBar").style.width = "100%"
@@ -177,6 +174,9 @@ async function generate() {
             return
         }
 
+        const lyricColor = document.getElementById("lyricColor").value
+        const fontStyle = document.getElementById("fontStyle").value
+
         document.getElementById("status").innerText =
             "Uploading files... Estimated time: " +
             document.getElementById("etaText").innerText
@@ -192,6 +192,8 @@ async function generate() {
         form.append("audio", audio)
         form.append("background", bg)
         form.append("video_format", selectedFormat)
+        form.append("lyric_color", lyricColor)
+        form.append("font_style", fontStyle)
 
         const response = await fetch(
             API_BASE + "/generate",
@@ -217,12 +219,13 @@ async function generate() {
         setProgress(10)
 
         startFakeProgress()
-
         checkStatus()
     }
 
     catch (error) {
         clearInterval(progressTimer)
+
+        renderStartedAt = null
 
         document.getElementById("status").innerText =
             "Frontend/backend error: " + error.message
