@@ -71,7 +71,7 @@ def transcribe_audio(audio_path):
     result = model.transcribe(
         audio_path,
 
-        language="nl",
+        language=None,
 
         task="transcribe",
 
@@ -79,15 +79,7 @@ def transcribe_audio(audio_path):
 
         fp16=False,
 
-        initial_prompt=(
-            "Dit is een Nederlands rapnummer met straattaal, slang en jongerentaal. "
-            "Transcribeer letterlijk wat er gezegd wordt. "
-            "Vertaal niets naar Engels of Duits. "
-            "Behoud Nederlandse straattaal zoals: bro, broer, mattie, do, doekoe, "
-            "osso, skeer, fissa, kaulo, kanker, wollah, sahbi, niffo, strijder, "
-            "drerrie, pokoe, barkie, stack, stacks, money, cash, gang, vibe, baddie. "
-            "Gebruik de originele woorden zoals gezongen."
-        )
+        initial_prompt=None
     )
 
     words = []
