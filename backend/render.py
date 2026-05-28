@@ -6,25 +6,6 @@ import whisper
 from moviepy.editor import AudioFileClip
 from moviepy.video.VideoClip import VideoClip
 
-from PIL import (
-    Image,
-    ImageDraw,
-    ImageFont,
-    ImageFilter
-)
-
-# =========================================================
-# CONFIG
-# =========================================================
-
-FPS = 24import os
-import random
-import numpy as np
-import whisper
-
-from moviepy.editor import AudioFileClip
-from moviepy.video.VideoClip import VideoClip
-
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 FPS = 24
