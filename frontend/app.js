@@ -2,6 +2,7 @@ let currentJobId = null
 let fakeProgress = 0
 let progressTimer = null
 let selectedFormat = "youtube"
+let renderStartedAt = null
 
 const API_BASE = window.location.origin
 
@@ -22,6 +23,47 @@ function updateEta() {
     else if (selectedFormat === "tiktok") {
         etaText.innerText = "3–6 minutes"
     }
+}
+
+function getEstimatedSeconds() {
+    if (selectedFormat === "youtube") {
+        return 150
+    }
+
+    if (selectedFormat === "square") {
+        return 210
+    }
+
+    if (selectedFormat === "tiktok") {
+        return 300
+    }
+
+    return 180
+}
+
+function formatTime(seconds) {
+    seconds = Math.max(0, Math.ceil(seconds))
+
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+
+    if (minutes <= 0) {
+        return remainingSeconds + "s left"
+    }
+
+    return minutes + "m " + remainingSeconds + "s left"
+}
+
+function getTimeLeftText() {
+    if (!renderStartedAt) {
+        return ""
+    }
+
+    const elapsed = (Date.now() - renderStartedAt) / 1000
+    const estimated = getEstimatedSeconds()
+    const remaining = estimated - elapsed
+
+    return " · " + formatTime(remaining)
 }
 
 function selectFormat(format) {
@@ -75,8 +117,11 @@ function setupDrag(boxId, inputId) {
 
     box.addEventListener("drop", (e) => {
         e.preventDefault()
+
         box.classList.remove("dragover")
+
         input.files = e.dataTransfer.files
+
         input.dispatchEvent(new Event("change"))
     })
 }
@@ -87,15 +132,16 @@ setupDrag("bgBox", "bg")
 function setProgress(value) {
     fakeProgress = Math.min(value, 100)
 
-    document.getElementById("progressBar").style.width =
-        fakeProgress + "%"
+    document.getElementById("progressBar").style.width = fakeProgress + "%"
 
     document.getElementById("progressText").innerText =
-        Math.floor(fakeProgress) + "%"
+        Math.floor(fakeProgress) + "%" + getTimeLeftText()
 }
 
 function startFakeProgress() {
     clearInterval(progressTimer)
+
+    renderStartedAt = Date.now()
 
     progressTimer = setInterval(() => {
         if (fakeProgress < 90) {
@@ -107,13 +153,18 @@ function startFakeProgress() {
         }
 
         setProgress(fakeProgress)
-
     }, 1000)
 }
 
 function stopProgressDone() {
     clearInterval(progressTimer)
-    setProgress(100)
+
+    renderStartedAt = null
+
+    fakeProgress = 100
+
+    document.getElementById("progressBar").style.width = "100%"
+    document.getElementById("progressText").innerText = "100% · ready"
 }
 
 async function generate() {
@@ -131,6 +182,8 @@ async function generate() {
             document.getElementById("etaText").innerText
 
         document.getElementById("download").innerHTML = ""
+
+        renderStartedAt = null
 
         setProgress(5)
 
@@ -164,6 +217,7 @@ async function generate() {
         setProgress(10)
 
         startFakeProgress()
+
         checkStatus()
     }
 
@@ -229,12 +283,16 @@ async function checkStatus() {
         else if (data.status === "error") {
             clearInterval(progressTimer)
 
+            renderStartedAt = null
+
             document.getElementById("status").innerText =
                 "Render error: " + data.error
         }
 
         else {
             clearInterval(progressTimer)
+
+            renderStartedAt = null
 
             document.getElementById("status").innerText =
                 "Unknown status: " + data.status
@@ -243,6 +301,8 @@ async function checkStatus() {
 
     catch (error) {
         clearInterval(progressTimer)
+
+        renderStartedAt = null
 
         document.getElementById("status").innerText =
             "Status check error: " + error.message
