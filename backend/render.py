@@ -10,8 +10,8 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 FPS = 24
 
-FONT_SIZE = 72
-LINE_HEIGHT = 90
+FONT_SIZE = 65
+LINE_HEIGHT = 80
 
 MAX_WORDS = 7
 MAX_CHARS = 34
