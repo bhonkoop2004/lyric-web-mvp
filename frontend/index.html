@@ -4,311 +4,546 @@
     <title>Lyric Generator</title>
 
     <style>
+
         * {
             box-sizing: border-box;
         }
 
         body {
+
             margin: 0;
+
             font-family: Arial, sans-serif;
+
             background:
-                radial-gradient(circle at top, rgba(255,20,147,0.18), transparent 35%),
+                radial-gradient(
+                    circle at top,
+                    rgba(255,20,147,0.18),
+                    transparent 35%
+                ),
                 #0f0f0f;
+
             color: white;
+
             min-height: 100vh;
+
             padding: 30px;
         }
 
         .page {
+
             width: 100%;
+
             max-width: 980px;
+
             margin: 0 auto;
         }
 
         .hero {
+
             text-align: center;
+
             margin-bottom: 35px;
         }
 
         .hero-badge {
+
             display: inline-block;
+
             padding: 8px 14px;
+
             border-radius: 999px;
-            background: rgba(255,20,147,0.12);
+
+            background:
+                rgba(255,20,147,0.12);
+
             color: #ff9bd2;
+
             font-size: 14px;
+
             margin-bottom: 18px;
         }
 
         h1 {
+
             margin: 0;
+
             font-size: 46px;
+
             line-height: 1.1;
         }
 
         .subtitle {
+
             color: #aaa;
+
             margin-top: 16px;
+
             line-height: 1.6;
+
             font-size: 17px;
         }
 
         .container {
+
             width: 100%;
-            background: rgba(24,24,24,0.96);
-            border: 1px solid rgba(255,255,255,0.08);
+
+            background:
+                rgba(24,24,24,0.96);
+
+            border:
+                1px solid rgba(255,255,255,0.08);
+
             border-radius: 30px;
+
             padding: 34px;
-            box-shadow: 0 0 50px rgba(255,20,147,0.13);
+
+            box-shadow:
+                0 0 50px rgba(255,20,147,0.13);
         }
 
         .section-title {
+
             margin-top: 0;
+
             margin-bottom: 16px;
+
             font-size: 20px;
         }
 
         .format-grid {
+
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
             gap: 14px;
+
             margin-bottom: 28px;
         }
 
         .option-grid {
+
             display: grid;
-            grid-template-columns: 1fr 1fr;
+
+            grid-template-columns:
+                1fr 1fr;
+
             gap: 18px;
-            margin-bottom: 28px;
+
+            margin-bottom: 18px;
         }
 
         .option-label {
+
             display: block;
+
             margin-bottom: 8px;
+
             color: #aaa;
+
             font-size: 14px;
         }
 
         select {
+
             width: 100%;
+
             padding: 16px;
+
             border-radius: 16px;
+
             background: #111;
+
             color: white;
+
             border: 2px solid #333;
+
             font-size: 15px;
+
             outline: none;
         }
 
         select:focus {
+
             border-color: #ff1493;
         }
 
         .format-card {
+
             border: 2px solid #333;
+
             border-radius: 18px;
+
             padding: 18px;
+
             text-align: center;
+
             cursor: pointer;
+
             transition: 0.25s ease;
+
             background: #111;
         }
 
         .format-card:hover {
+
             border-color: #ff1493;
-            background: rgba(255,20,147,0.06);
+
+            background:
+                rgba(255,20,147,0.06);
         }
 
         .format-card.active {
+
             border-color: #ff1493;
-            box-shadow: 0 0 25px rgba(255,20,147,0.25);
-            background: rgba(255,20,147,0.12);
+
+            box-shadow:
+                0 0 25px rgba(255,20,147,0.25);
+
+            background:
+                rgba(255,20,147,0.12);
         }
 
         .format-title {
+
             font-size: 17px;
+
             font-weight: bold;
+
             margin-bottom: 6px;
         }
 
         .format-sub {
+
             color: #aaa;
+
             font-size: 13px;
         }
 
         .eta-box {
+
             margin-top: 4px;
+
             margin-bottom: 22px;
+
             padding: 16px 18px;
+
             border-radius: 18px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.07);
+
+            background:
+                rgba(255,255,255,0.04);
+
+            border:
+                1px solid rgba(255,255,255,0.07);
+
             color: #bbb;
+
             font-size: 14px;
+
             line-height: 1.5;
         }
 
         .eta-highlight {
+
             color: #ff9bd2;
+
             font-weight: bold;
         }
 
         .upload-grid {
+
             display: grid;
-            grid-template-columns: 1fr 1fr;
+
+            grid-template-columns:
+                1fr 1fr;
+
             gap: 18px;
+
             margin-bottom: 22px;
         }
 
         .upload-box {
+
             min-width: 0;
-            border: 2px dashed #444;
+
+            border:
+                2px dashed #444;
+
             border-radius: 24px;
+
             padding: 28px 22px;
+
             transition: 0.25s ease;
+
             text-align: center;
+
             cursor: pointer;
-            background: rgba(255,255,255,0.02);
+
+            background:
+                rgba(255,255,255,0.02);
+
             overflow: hidden;
         }
 
         .upload-box:hover {
+
             border-color: #ff1493;
-            background: rgba(255,20,147,0.05);
+
+            background:
+                rgba(255,20,147,0.05);
         }
 
         .upload-box.dragover {
+
             border-color: #ff1493;
-            background: rgba(255,20,147,0.12);
+
+            background:
+                rgba(255,20,147,0.12);
         }
 
         .upload-icon {
+
             font-size: 34px;
+
             margin-bottom: 10px;
         }
 
         .upload-title {
+
             font-size: 20px;
+
             font-weight: bold;
+
             margin-bottom: 8px;
         }
 
         .upload-sub {
+
             color: #aaa;
+
             font-size: 14px;
         }
 
         input[type=file] {
+
             display: none;
         }
 
         .filename {
+
             margin-top: 14px;
+
             color: #ff9bd2;
+
             font-size: 13px;
+
             white-space: nowrap;
+
             overflow: hidden;
+
             text-overflow: ellipsis;
+
             max-width: 100%;
         }
 
         .preview {
+
             margin-top: 6px;
+
             margin-bottom: 24px;
+
             border-radius: 22px;
+
             overflow: hidden;
+
             display: none;
         }
 
         .preview img {
+
             width: 100%;
+
             max-height: 260px;
+
             object-fit: cover;
+
             display: block;
+
             border-radius: 22px;
-            box-shadow: 0 0 30px rgba(255,20,147,0.2);
+
+            box-shadow:
+                0 0 30px rgba(255,20,147,0.2);
         }
 
         .generate-button {
+
             width: 100%;
+
             border: none;
+
             border-radius: 20px;
-            background: linear-gradient(90deg, #ff1493, #ff5ab7);
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #ff1493,
+                    #ff5ab7
+                );
+
             color: white;
+
             font-size: 18px;
+
             font-weight: bold;
+
             padding: 19px;
+
             cursor: pointer;
+
             transition: 0.2s ease;
         }
 
         .generate-button:hover {
+
             transform: translateY(-2px);
+
             opacity: 0.96;
         }
 
         .status-box {
+
             margin-top: 30px;
-            background: rgba(255,255,255,0.04);
+
+            background:
+                rgba(255,255,255,0.04);
+
             border-radius: 22px;
+
             padding: 22px;
         }
 
         .status-text {
+
             margin-bottom: 12px;
+
             color: #ddd;
         }
 
         .progress-container {
+
             width: 100%;
+
             height: 26px;
+
             background: #2a2a2a;
+
             border-radius: 20px;
+
             overflow: hidden;
         }
 
         .progress-bar {
+
             width: 0%;
+
             height: 100%;
-            background: linear-gradient(90deg, #ff1493, #ff7cc8);
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #ff1493,
+                    #ff7cc8
+                );
+
             transition: width 0.4s ease;
         }
 
         .progress-text {
+
             margin-top: 10px;
+
             color: #bbb;
+
             font-size: 14px;
         }
 
         .download {
+
             margin-top: 28px;
+
             text-align: center;
         }
 
         .download a {
+
             display: inline-block;
+
             padding: 15px 30px;
+
             border-radius: 16px;
+
             background: #ff1493;
+
             color: white;
+
             text-decoration: none;
+
             font-weight: bold;
+
             transition: 0.2s ease;
         }
 
         .download a:hover {
+
             transform: scale(1.03);
         }
 
         .tips {
+
             margin-top: 22px;
+
             color: #888;
+
             font-size: 13px;
+
             text-align: center;
+
             line-height: 1.5;
         }
 
+        #lyricPreview {
+
+            margin-top: -4px;
+
+            margin-bottom: 28px;
+
+            padding: 20px;
+
+            border-radius: 18px;
+
+            background:
+                rgba(255,255,255,0.04);
+
+            border:
+                1px solid rgba(255,255,255,0.08);
+
+            text-align: center;
+
+            color: #ff3cb4;
+
+            font-weight: 800;
+
+            font-size: 24px;
+
+            letter-spacing: 0px;
+
+            transition: 0.2s ease;
+        }
+
         @media (max-width: 760px) {
+
             body {
                 padding: 18px;
             }
@@ -318,143 +553,325 @@
             }
 
             .container {
+
                 padding: 24px;
+
                 border-radius: 24px;
             }
 
             .format-grid,
             .upload-grid,
             .option-grid {
+
                 grid-template-columns: 1fr;
             }
 
             .upload-box {
+
                 padding: 26px 18px;
             }
         }
+
     </style>
 </head>
+
 <body>
 
 <div class="page">
 
     <div class="hero">
+
         <div class="hero-badge">
             AI Lyric Video Generator
         </div>
 
-        <h1>Create cinematic lyric videos in minutes</h1>
+        <h1>
+            Create cinematic lyric videos in minutes
+        </h1>
 
         <div class="subtitle">
-            Upload your song and artwork. AI detects the lyrics automatically and turns them into a synced video.
+            Upload your song and artwork.
+            AI detects the lyrics automatically
+            and turns them into a synced video.
         </div>
+
     </div>
 
     <div class="container">
 
-        <h3 class="section-title">Choose video format</h3>
+        <h3 class="section-title">
+            Choose video format
+        </h3>
 
         <div class="format-grid">
 
-            <div class="format-card active" onclick="selectFormat('youtube')" id="format-youtube">
-                <div class="format-title">YouTube</div>
-                <div class="format-sub">16:9 · 1280x720</div>
+            <div
+                class="format-card active"
+                onclick="selectFormat('youtube')"
+                id="format-youtube"
+            >
+
+                <div class="format-title">
+                    YouTube
+                </div>
+
+                <div class="format-sub">
+                    16:9 · 1280x720
+                </div>
+
             </div>
 
-            <div class="format-card" onclick="selectFormat('tiktok')" id="format-tiktok">
-                <div class="format-title">TikTok / Reels</div>
-                <div class="format-sub">9:16 · 1080x1920</div>
+            <div
+                class="format-card"
+                onclick="selectFormat('tiktok')"
+                id="format-tiktok"
+            >
+
+                <div class="format-title">
+                    TikTok / Reels
+                </div>
+
+                <div class="format-sub">
+                    9:16 · 1080x1920
+                </div>
+
             </div>
 
-            <div class="format-card" onclick="selectFormat('square')" id="format-square">
-                <div class="format-title">Square</div>
-                <div class="format-sub">1:1 · 1080x1080</div>
+            <div
+                class="format-card"
+                onclick="selectFormat('square')"
+                id="format-square"
+            >
+
+                <div class="format-title">
+                    Square
+                </div>
+
+                <div class="format-sub">
+                    1:1 · 1080x1080
+                </div>
+
             </div>
 
         </div>
 
         <div class="eta-box" id="etaBox">
+
             Estimated render time:
-            <span class="eta-highlight" id="etaText">1–3 minutes</span>
+
+            <span
+                class="eta-highlight"
+                id="etaText"
+            >
+                1–3 minutes
+            </span>
+
         </div>
 
-        <h3 class="section-title">Customize lyrics</h3>
+        <h3 class="section-title">
+            Customize lyrics
+        </h3>
 
         <div class="option-grid">
 
             <div>
-                <label class="option-label">Lyric color</label>
 
-                <select id="lyricColor">
-                    <option value="pink">Pink</option>
-                    <option value="yellow">Yellow</option>
-                    <option value="blue">Blue</option>
-                    <option value="green">Green</option>
-                    <option value="white">White</option>
+                <label class="option-label">
+                    Lyric color
+                </label>
+
+                <select
+                    id="lyricColor"
+                    onchange="updateLyricPreview()"
+                >
+
+                    <option value="pink">
+                        Pink
+                    </option>
+
+                    <option value="yellow">
+                        Yellow
+                    </option>
+
+                    <option value="blue">
+                        Blue
+                    </option>
+
+                    <option value="green">
+                        Green
+                    </option>
+
+                    <option value="white">
+                        White
+                    </option>
+
                 </select>
+
             </div>
 
             <div>
-                <label class="option-label">Font style</label>
 
-                <select id="fontStyle">
-                    <option value="bold">Bold</option>
-                    <option value="clean">Clean</option>
-                    <option value="cinematic">Cinematic</option>
+                <label class="option-label">
+                    Font style
+                </label>
+
+                <select
+                    id="fontStyle"
+                    onchange="updateLyricPreview()"
+                >
+
+                    <option value="bold">
+                        Bold
+                    </option>
+
+                    <option value="clean">
+                        Clean
+                    </option>
+
+                    <option value="cinematic">
+                        Cinematic
+                    </option>
+
                 </select>
+
             </div>
 
         </div>
 
-        <h3 class="section-title">Upload files</h3>
+        <div id="lyricPreview">
+            This is how lyrics will look
+        </div>
+
+        <h3 class="section-title">
+            Upload files
+        </h3>
 
         <div class="upload-grid">
 
-            <label class="upload-box" id="audioBox">
-                <div class="upload-icon">🎵</div>
-                <div class="upload-title">Upload Song</div>
-                <div class="upload-sub">MP3 audio file</div>
-                <div class="filename" id="audioName">No file selected</div>
-                <input type="file" id="audio" accept=".mp3">
+            <label
+                class="upload-box"
+                id="audioBox"
+            >
+
+                <div class="upload-icon">
+                    🎵
+                </div>
+
+                <div class="upload-title">
+                    Upload Song
+                </div>
+
+                <div class="upload-sub">
+                    MP3 audio file
+                </div>
+
+                <div
+                    class="filename"
+                    id="audioName"
+                >
+                    No file selected
+                </div>
+
+                <input
+                    type="file"
+                    id="audio"
+                    accept=".mp3"
+                >
+
             </label>
 
-            <label class="upload-box" id="bgBox">
-                <div class="upload-icon">🖼</div>
-                <div class="upload-title">Upload Artwork</div>
-                <div class="upload-sub">JPG or PNG image</div>
-                <div class="filename" id="bgName">No file selected</div>
-                <input type="file" id="bg" accept=".jpg,.jpeg,.png">
+            <label
+                class="upload-box"
+                id="bgBox"
+            >
+
+                <div class="upload-icon">
+                    🖼
+                </div>
+
+                <div class="upload-title">
+                    Upload Artwork
+                </div>
+
+                <div class="upload-sub">
+                    JPG or PNG image
+                </div>
+
+                <div
+                    class="filename"
+                    id="bgName"
+                >
+                    No file selected
+                </div>
+
+                <input
+                    type="file"
+                    id="bg"
+                    accept=".jpg,.jpeg,.png"
+                >
+
             </label>
 
         </div>
 
-        <div class="preview" id="preview"></div>
+        <div
+            class="preview"
+            id="preview"
+        ></div>
 
-        <button class="generate-button" onclick="generate()">
+        <button
+            class="generate-button"
+            onclick="generate()"
+        >
             Generate Lyric Video
         </button>
 
         <div class="status-box">
-            <div class="status-text" id="status">Waiting for upload...</div>
 
-            <div class="progress-container">
-                <div class="progress-bar" id="progressBar"></div>
+            <div
+                class="status-text"
+                id="status"
+            >
+                Waiting for upload...
             </div>
 
-            <div class="progress-text" id="progressText">0% · calculating...</div>
+            <div class="progress-container">
+
+                <div
+                    class="progress-bar"
+                    id="progressBar"
+                ></div>
+
+            </div>
+
+            <div
+                class="progress-text"
+                id="progressText"
+            >
+                0% · calculating...
+            </div>
+
         </div>
 
-        <div class="download" id="download"></div>
+        <div
+            class="download"
+            id="download"
+        ></div>
 
         <div class="tips">
-            Best results: clear vocals, MP3 audio, and a high-quality square or vertical artwork image.
+
+            Best results:
+            clear vocals,
+            MP3 audio,
+            and a high-quality artwork image.
+
         </div>
 
     </div>
 
 </div>
 
-<script src="/app.js?v=6"></script>
+<script src="/app.js?v=7"></script>
 
 </body>
 </html>
