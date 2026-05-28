@@ -1,33 +1,108 @@
-from moviepy.editor import *
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
-import numpy as np
+import os
 import random
+import numpy as np
 import whisper
+
+from moviepy.editor import AudioFileClip
+from moviepy.video.VideoClip import VideoClip
+
+from PIL import (
+    Image,
+    ImageDraw,
+    ImageFont,
+    ImageFilter
+)
+
+# =========================================================
+# CONFIG
+# =========================================================
 
 FPS = 24
 
-FONT_SIZE = 72
-LINE_HEIGHT = 90
+FONT_SIZE = 110
+LINE_HEIGHT = 125
 
-MAX_WORDS = 7
-MAX_CHARS = 34
+MAX_WORDS = 5
+MAX_CHARS = 28
 
-SHADOW_OFFSET = 4
+SHADOW_OFFSET = 5
 PARTICLE_COUNT = 25
 
 WHISPER_MODEL = None
 
-try:
-    font = ImageFont.truetype(
-        "C:/Windows/Fonts/arialbd.ttf",
-        FONT_SIZE
-    )
-except:
-    font = ImageFont.load_default()
+# =========================================================
+# FONT LOADING
+# =========================================================
 
+def load_font(size):
+
+    possible_fonts = [
+
+        "C:/Windows/Fonts/arialbd.ttf",
+
+        "C:/Windows/Fonts/Arial.ttf",
+
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+    ]
+
+    for font_path in possible_fonts:
+
+        if os.path.exists(font_path):
+
+            print("Using font:", font_path)
+
+            return ImageFont.truetype(
+                font_path,
+                size
+            )
+
+    search_dirs = [
+        "/usr/share/fonts",
+        "/nix/store"
+    ]
+
+    wanted_names = [
+        "DejaVuSans-Bold.ttf",
+        "LiberationSans-Bold.ttf",
+        "Arial.ttf"
+    ]
+
+    for search_dir in search_dirs:
+
+        if os.path.exists(search_dir):
+
+            for root, dirs, files in os.walk(search_dir):
+
+                for file in files:
+
+                    if file in wanted_names:
+
+                        discovered = os.path.join(
+                            root,
+                            file
+                        )
+
+                        print(
+                            "Using discovered font:",
+                            discovered
+                        )
+
+                        return ImageFont.truetype(
+                            discovered,
+                            size
+                        )
+
+    print("WARNING: fallback tiny font used")
+
+    return ImageFont.load_default()
+
+
+font = load_font(FONT_SIZE)
 
 # =========================================================
-# VIDEO FORMAT SIZES
+# VIDEO SIZE
 # =========================================================
 
 def get_video_size(video_format):
@@ -40,9 +115,8 @@ def get_video_size(video_format):
 
     return 1280, 720
 
-
 # =========================================================
-# WHISPER MODEL
+# WHISPER
 # =========================================================
 
 def get_whisper_model():
@@ -53,22 +127,26 @@ def get_whisper_model():
 
         print("Loading Whisper model...")
 
-        WHISPER_MODEL = whisper.load_model("base")
+        WHISPER_MODEL = whisper.load_model(
+            "base"
+        )
 
     return WHISPER_MODEL
 
-
 # =========================================================
-# TRANSCRIBE AUDIO
+# TRANSCRIBE
 # =========================================================
 
 def transcribe_audio(audio_path):
 
     model = get_whisper_model()
 
-    print("Transcribing lyrics automatically...")
+    print(
+        "Transcribing lyrics automatically..."
+    )
 
     result = model.transcribe(
+
         audio_path,
 
         language=None,
@@ -84,59 +162,101 @@ def transcribe_audio(audio_path):
 
     words = []
 
-    for segment in result.get("segments", []):
+    for segment in result.get(
+        "segments",
+        []
+    ):
 
-        for w in segment.get("words", []):
+        for w in segment.get(
+            "words",
+            []
+        ):
 
-            word_text = w.get("word", "").strip()
+            word_text = w.get(
+                "word",
+                ""
+            ).strip()
 
             if not word_text:
                 continue
 
             words.append({
+
                 "word": word_text,
-                "start": float(w["start"]),
-                "end": float(w["end"])
+
+                "start": float(
+                    w["start"]
+                ),
+
+                "end": float(
+                    w["end"]
+                )
             })
+
+    print(
+        "Total lyric words:",
+        len(words)
+    )
 
     return words
 
-
 # =========================================================
-# MAIN RENDER FUNCTION
+# MAIN RENDER
 # =========================================================
 
 def render_video(
+
     audio_path,
+
     bg_path,
+
     output_path,
+
     video_format="youtube",
+
     lyric_language="auto"
 ):
 
-    W, H = get_video_size(video_format)
+    W, H = get_video_size(
+        video_format
+    )
 
-    audio = AudioFileClip(audio_path)
+    audio = AudioFileClip(
+        audio_path
+    )
 
-    lyrics = transcribe_audio(audio_path)
+    lyrics = transcribe_audio(
+        audio_path
+    )
 
-    bg_original = Image.open(bg_path).convert("RGB")
+    bg_original = Image.open(
+        bg_path
+    ).convert("RGB")
 
-    # =====================================================
-    # PRE-RENDER STATIC BACKGROUND
-    # =====================================================
-
-    base = bg_original.resize((W, H)).convert("RGBA")
-
-    blur = bg_original.resize((W, H)).filter(
-        ImageFilter.GaussianBlur(10)
+    base = bg_original.resize(
+        (W, H)
     ).convert("RGBA")
 
-    static_bg = Image.blend(base, blur, 0.15)
+    blur = bg_original.resize(
+        (W, H)
+    ).filter(
+
+        ImageFilter.GaussianBlur(10)
+
+    ).convert("RGBA")
+
+    static_bg = Image.blend(
+        base,
+        blur,
+        0.15
+    )
 
     overlay = Image.new(
+
         "RGBA",
+
         (W, H),
+
         (0, 0, 0, 60)
     )
 
@@ -162,10 +282,11 @@ def render_video(
                 nxt = lyrics[i + 1]["start"]
 
                 if w["end"] > nxt:
+
                     w["end"] = nxt - 0.01
 
     # =====================================================
-    # SPLIT SENTENCES
+    # SPLIT
     # =====================================================
 
     def split_sentences(words):
@@ -173,18 +294,26 @@ def render_video(
         sentences = []
 
         current = []
+
         chars = 0
 
         for i, w in enumerate(words):
 
             current.append(w)
 
-            chars += len(w["word"]) + 1
+            chars += len(
+                w["word"]
+            ) + 1
 
-            is_last = i == len(words) - 1
+            is_last = (
+                i == len(words) - 1
+            )
 
             gap = (
-                words[i + 1]["start"] - w["end"]
+
+                words[i + 1]["start"]
+                - w["end"]
+
                 if not is_last else 0
             )
 
@@ -207,11 +336,14 @@ def render_video(
                 sentences.append(current)
 
                 current = []
+
                 chars = 0
 
         return sentences
 
-    sentences = split_sentences(lyrics)
+    sentences = split_sentences(
+        lyrics
+    )
 
     # =====================================================
     # PARTICLES
@@ -224,9 +356,16 @@ def render_video(
     for _ in range(PARTICLE_COUNT):
 
         particles.append({
+
             "x": random.randint(0, W),
+
             "y": random.randint(0, H),
-            "speed": random.uniform(0.5, 1.5),
+
+            "speed": random.uniform(
+                0.5,
+                1.5
+            ),
+
             "size": random.randint(1, 2)
         })
 
@@ -235,54 +374,89 @@ def render_video(
     # =====================================================
 
     def lerp(a, b, t):
-        return int(a + (b - a) * t)
+
+        return int(
+            a + (b - a) * t
+        )
 
     def color(progress):
 
         return (
-            lerp(255, 255, progress),
-            lerp(255, 60, progress),
-            lerp(255, 180, progress)
+
+            lerp(
+                255,
+                255,
+                progress
+            ),
+
+            lerp(
+                255,
+                60,
+                progress
+            ),
+
+            lerp(
+                255,
+                180,
+                progress
+            )
         )
 
     # =====================================================
-    # FRAME FUNCTION
+    # FRAME
     # =====================================================
 
     def make_frame(t):
 
         frame = static_bg.copy()
 
-        # =================================================
-        # PARTICLES
-        # =================================================
-
         particle_layer = Image.new(
+
             "RGBA",
+
             (W, H),
+
             (0, 0, 0, 0)
         )
 
-        pd = ImageDraw.Draw(particle_layer)
+        pd = ImageDraw.Draw(
+            particle_layer
+        )
 
         for p in particles:
 
             py = (
-                p["y"] - t * p["speed"] * 8
+
+                p["y"]
+                - t * p["speed"] * 8
+
             ) % H
 
             pd.ellipse(
+
                 (
+
                     p["x"],
+
                     py,
+
                     p["x"] + p["size"],
+
                     py + p["size"]
                 ),
-                fill=(255, 255, 255, 20)
+
+                fill=(
+                    255,
+                    255,
+                    255,
+                    20
+                )
             )
 
         particle_layer = particle_layer.filter(
+
             ImageFilter.GaussianBlur(1)
+
         )
 
         frame = Image.alpha_composite(
@@ -293,22 +467,30 @@ def render_video(
         draw = ImageDraw.Draw(frame)
 
         # =================================================
-        # LYRICS
+        # DRAW LYRICS
         # =================================================
 
         for sentence in sentences:
 
             start = sentence[0]["start"]
+
             end = sentence[-1]["end"]
 
-            if not (start <= t <= end):
+            if not (
+                start <= t <= end
+            ):
                 continue
 
             lines = []
 
             current = []
 
-            words_per_line = 3 if video_format == "tiktok" else 4
+            words_per_line = (
+
+                2
+                if video_format == "tiktok"
+                else 3
+            )
 
             for w in sentence:
 
@@ -323,24 +505,34 @@ def render_video(
             if current:
                 lines.append(current)
 
-            total_h = len(lines) * LINE_HEIGHT
+            total_h = (
+                len(lines)
+                * LINE_HEIGHT
+            )
 
-            y0 = (H - total_h) // 2
-
-            if video_format == "tiktok":
-                y0 = int(H * 0.48) - total_h // 2
+            y0 = (
+                int(H * 0.70)
+                - total_h // 2
+            )
 
             positions = []
 
             for li, line in enumerate(lines):
 
                 txt = " ".join(
-                    [w["word"] for w in line]
+
+                    [
+                        w["word"]
+                        for w in line
+                    ]
                 )
 
                 bbox = draw.textbbox(
+
                     (0, 0),
+
                     txt,
+
                     font=font
                 )
 
@@ -352,11 +544,16 @@ def render_video(
 
                 for w in line:
 
-                    positions.append((x, y))
+                    positions.append(
+                        (x, y)
+                    )
 
                     bbox = draw.textbbox(
+
                         (0, 0),
+
                         w["word"] + " ",
+
                         font=font
                     )
 
@@ -366,7 +563,11 @@ def render_video(
 
             for i, w in enumerate(sentence):
 
-                if w["start"] <= t <= w["end"]:
+                if (
+                    w["start"]
+                    <= t
+                    <= w["end"]
+                ):
 
                     active = i
                     break
@@ -377,52 +578,66 @@ def render_video(
 
                 txt = w["word"] + " "
 
-                progress = 1 if i == active else 0
+                progress = (
+                    1 if i == active else 0
+                )
 
                 c = color(progress)
 
-                # shadow
                 draw.text(
+
                     (
                         x + SHADOW_OFFSET,
                         y + SHADOW_OFFSET
                     ),
+
                     txt,
+
                     font=font,
+
                     fill=(0, 0, 0)
                 )
 
-                # main text
                 draw.text(
+
                     (x, y),
+
                     txt,
+
                     font=font,
+
                     fill=c
                 )
 
-        return np.array(frame.convert("RGB"))
-
-    # =====================================================
-    # CREATE VIDEO
-    # =====================================================
-
-    video = VideoClip(
-        make_frame,
-        duration=audio.duration
-    )
-
-    video = video.set_audio(audio)
+        return np.array(
+            frame.convert("RGB")
+        )
 
     # =====================================================
     # EXPORT
     # =====================================================
 
+    video = VideoClip(
+
+        make_frame,
+
+        duration=audio.duration
+    )
+
+    video = video.set_audio(audio)
+
     video.write_videofile(
+
         output_path,
+
         fps=FPS,
+
         codec="libx264",
+
         audio_codec="aac",
+
         preset="ultrafast",
+
         threads=4
     )
 
