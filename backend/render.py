@@ -1,5 +1,4 @@
-from moviepy.editor import AudioFileClip
-from moviepy.video.VideoClip import VideoClip
+from moviepy.editor import *
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import numpy as np
 import random
@@ -7,11 +6,11 @@ import whisper
 
 FPS = 24
 
-FONT_SIZE = 110
-LINE_HEIGHT = 120
+FONT_SIZE = 72
+LINE_HEIGHT = 90
 
-MAX_WORDS = 4
-MAX_CHARS = 22
+MAX_WORDS = 7
+MAX_CHARS = 34
 
 SHADOW_OFFSET = 4
 PARTICLE_COUNT = 25
@@ -27,6 +26,10 @@ except:
     font = ImageFont.load_default()
 
 
+# =========================================================
+# VIDEO FORMAT SIZES
+# =========================================================
+
 def get_video_size(video_format):
 
     if video_format == "tiktok":
@@ -37,6 +40,10 @@ def get_video_size(video_format):
 
     return 1280, 720
 
+
+# =========================================================
+# WHISPER MODEL
+# =========================================================
 
 def get_whisper_model():
 
@@ -51,6 +58,10 @@ def get_whisper_model():
     return WHISPER_MODEL
 
 
+# =========================================================
+# TRANSCRIBE AUDIO
+# =========================================================
+
 def transcribe_audio(audio_path):
 
     model = get_whisper_model()
@@ -59,11 +70,24 @@ def transcribe_audio(audio_path):
 
     result = model.transcribe(
         audio_path,
-        language=None,
+
+        language="nl",
+
         task="transcribe",
+
         word_timestamps=True,
+
         fp16=False,
-        
+
+        initial_prompt=(
+            "Dit is een Nederlands rapnummer met straattaal, slang en jongerentaal. "
+            "Transcribeer letterlijk wat er gezegd wordt. "
+            "Vertaal niets naar Engels of Duits. "
+            "Behoud Nederlandse straattaal zoals: bro, broer, mattie, do, doekoe, "
+            "osso, skeer, fissa, kaulo, kanker, wollah, sahbi, niffo, strijder, "
+            "drerrie, pokoe, barkie, stack, stacks, money, cash, gang, vibe, baddie. "
+            "Gebruik de originele woorden zoals gezongen."
+        )
     )
 
     words = []
@@ -83,10 +107,12 @@ def transcribe_audio(audio_path):
                 "end": float(w["end"])
             })
 
-    print("Total lyric words:", len(words))
-
     return words
 
+
+# =========================================================
+# MAIN RENDER FUNCTION
+# =========================================================
 
 def render_video(
     audio_path,
@@ -103,6 +129,10 @@ def render_video(
     lyrics = transcribe_audio(audio_path)
 
     bg_original = Image.open(bg_path).convert("RGB")
+
+    # =====================================================
+    # PRE-RENDER STATIC BACKGROUND
+    # =====================================================
 
     base = bg_original.resize((W, H)).convert("RGBA")
 
@@ -123,6 +153,10 @@ def render_video(
         overlay
     )
 
+    # =====================================================
+    # TIMING FIX
+    # =====================================================
+
     for i, w in enumerate(lyrics):
 
         dur = w["end"] - w["start"]
@@ -137,6 +171,10 @@ def render_video(
 
                 if w["end"] > nxt:
                     w["end"] = nxt - 0.01
+
+    # =====================================================
+    # SPLIT SENTENCES
+    # =====================================================
 
     def split_sentences(words):
 
@@ -183,6 +221,10 @@ def render_video(
 
     sentences = split_sentences(lyrics)
 
+    # =====================================================
+    # PARTICLES
+    # =====================================================
+
     random.seed(10)
 
     particles = []
@@ -196,6 +238,10 @@ def render_video(
             "size": random.randint(1, 2)
         })
 
+    # =====================================================
+    # COLORS
+    # =====================================================
+
     def lerp(a, b, t):
         return int(a + (b - a) * t)
 
@@ -207,9 +253,17 @@ def render_video(
             lerp(255, 180, progress)
         )
 
+    # =====================================================
+    # FRAME FUNCTION
+    # =====================================================
+
     def make_frame(t):
 
         frame = static_bg.copy()
+
+        # =================================================
+        # PARTICLES
+        # =================================================
 
         particle_layer = Image.new(
             "RGBA",
@@ -246,6 +300,10 @@ def render_video(
 
         draw = ImageDraw.Draw(frame)
 
+        # =================================================
+        # LYRICS
+        # =================================================
+
         for sentence in sentences:
 
             start = sentence[0]["start"]
@@ -258,7 +316,7 @@ def render_video(
 
             current = []
 
-            words_per_line = 2 if video_format == "tiktok" else 3
+            words_per_line = 3 if video_format == "tiktok" else 4
 
             for w in sentence:
 
@@ -278,7 +336,7 @@ def render_video(
             y0 = (H - total_h) // 2
 
             if video_format == "tiktok":
-                y0 = int(H * 0.70) - total_h // 2
+                y0 = int(H * 0.48) - total_h // 2
 
             positions = []
 
@@ -331,6 +389,7 @@ def render_video(
 
                 c = color(progress)
 
+                # shadow
                 draw.text(
                     (
                         x + SHADOW_OFFSET,
@@ -341,6 +400,7 @@ def render_video(
                     fill=(0, 0, 0)
                 )
 
+                # main text
                 draw.text(
                     (x, y),
                     txt,
@@ -350,12 +410,20 @@ def render_video(
 
         return np.array(frame.convert("RGB"))
 
+    # =====================================================
+    # CREATE VIDEO
+    # =====================================================
+
     video = VideoClip(
         make_frame,
         duration=audio.duration
     )
 
     video = video.set_audio(audio)
+
+    # =====================================================
+    # EXPORT
+    # =====================================================
 
     video.write_videofile(
         output_path,
