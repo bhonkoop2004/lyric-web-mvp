@@ -21,20 +21,18 @@ function updateLyricPreview() {
         document.getElementById("lyricPreview")
 
     const colors = {
-
         pink: "#ff3cb4",
-
         yellow: "#ffdc46",
-
         blue: "#50aaff",
-
         green: "#5aff96",
-
         white: "#ffffff"
     }
 
-    preview.style.color =
+    const activeColor =
         colors[color] || "#ff3cb4"
+
+    preview.style.color =
+        "#ffffff"
 
     if (fontStyle === "clean") {
 
@@ -71,6 +69,9 @@ function updateLyricPreview() {
         preview.style.letterSpacing =
             "0px"
     }
+
+    preview.innerHTML =
+        `This is how <span style="color:${activeColor}; text-shadow:0 0 12px ${activeColor};">lyrics</span> will look`
 }
 
 function updateEta() {
