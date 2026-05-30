@@ -29,14 +29,24 @@ function updateEta() {
 function selectStyle(style) {
     selectedStyle = style
 
+    document.getElementById("style-minimal").classList.remove("active")
     document.getElementById("style-classic").classList.remove("active")
     document.getElementById("style-neon").classList.remove("active")
     document.getElementById("style-cinematic").classList.remove("active")
+    document.getElementById("style-fire").classList.remove("active")
+    document.getElementById("style-emerald").classList.remove("active")
 
     document.getElementById("style-" + style).classList.add("active")
 }
 
 function getStyleValues() {
+    if (selectedStyle === "minimal") {
+        return {
+            lyricColor: "white",
+            fontStyle: "clean"
+        }
+    }
+
     if (selectedStyle === "neon") {
         return {
             lyricColor: "blue",
@@ -48,6 +58,20 @@ function getStyleValues() {
         return {
             lyricColor: "yellow",
             fontStyle: "cinematic"
+        }
+    }
+
+    if (selectedStyle === "fire") {
+        return {
+            lyricColor: "yellow",
+            fontStyle: "bold"
+        }
+    }
+
+    if (selectedStyle === "emerald") {
+        return {
+            lyricColor: "green",
+            fontStyle: "bold"
         }
     }
 

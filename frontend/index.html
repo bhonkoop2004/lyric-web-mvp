@@ -211,6 +211,21 @@
                 0 0 12px currentColor;
         }
 
+        .minimal-preview {
+
+            font-family: Arial, sans-serif;
+
+            font-weight: 500;
+        }
+
+        .minimal-preview .muted-word,
+        .minimal-preview .active-word {
+
+            color: white;
+
+            text-shadow: none;
+        }
+
         .classic-preview {
 
             font-family: Arial, sans-serif;
@@ -257,6 +272,38 @@
             text-shadow:
                 0 0 10px rgba(255,220,70,0.8),
                 0 0 18px rgba(255,220,70,0.45);
+        }
+
+        .fire-preview {
+
+            font-family: Arial, sans-serif;
+
+            font-weight: 900;
+        }
+
+        .fire-preview .active-word {
+
+            color: #ff7a2f;
+
+            text-shadow:
+                0 0 10px rgba(255,122,47,0.9),
+                0 0 20px rgba(255,60,20,0.55);
+        }
+
+        .emerald-preview {
+
+            font-family: Arial, sans-serif;
+
+            font-weight: 800;
+        }
+
+        .emerald-preview .active-word {
+
+            color: #5aff96;
+
+            text-shadow:
+                0 0 10px rgba(90,255,150,0.85),
+                0 0 18px rgba(90,255,150,0.35);
         }
 
         .eta-box {
@@ -683,6 +730,27 @@
         <div class="style-grid">
 
             <div
+                class="style-card"
+                onclick="selectStyle('minimal')"
+                id="style-minimal"
+            >
+
+                <div class="style-title">
+                    Minimal
+                </div>
+
+                <div class="style-preview minimal-preview">
+                    <span class="muted-word">This is my</span>
+                    <span class="active-word">moment</span>
+                </div>
+
+                <div class="style-sub">
+                    Plain white lyrics, no highlight
+                </div>
+
+            </div>
+
+            <div
                 class="style-card active"
                 onclick="selectStyle('classic')"
                 id="style-classic"
@@ -741,6 +809,48 @@
 
                 <div class="style-sub">
                     Premium gold cinematic look
+                </div>
+
+            </div>
+
+            <div
+                class="style-card"
+                onclick="selectStyle('fire')"
+                id="style-fire"
+            >
+
+                <div class="style-title">
+                    Fire
+                </div>
+
+                <div class="style-preview fire-preview">
+                    <span class="muted-word">Light the</span>
+                    <span class="active-word">fire</span>
+                </div>
+
+                <div class="style-sub">
+                    Warm orange performance style
+                </div>
+
+            </div>
+
+            <div
+                class="style-card"
+                onclick="selectStyle('emerald')"
+                id="style-emerald"
+            >
+
+                <div class="style-title">
+                    Emerald
+                </div>
+
+                <div class="style-preview emerald-preview">
+                    <span class="muted-word">Hold on</span>
+                    <span class="active-word">tight</span>
+                </div>
+
+                <div class="style-sub">
+                    Fresh green modern look
                 </div>
 
             </div>
@@ -876,7 +986,7 @@
 
 </div>
 
-<script src="/app.js?v=8"></script>
+<script src="/app.js?v=9"></script>
 
 </body>
 </html>
