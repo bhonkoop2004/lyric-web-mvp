@@ -111,7 +111,8 @@
             font-size: 20px;
         }
 
-        .format-grid {
+        .format-grid,
+        .style-grid {
 
             display: grid;
 
@@ -123,54 +124,8 @@
             margin-bottom: 28px;
         }
 
-        .option-grid {
-
-            display: grid;
-
-            grid-template-columns:
-                1fr 1fr;
-
-            gap: 18px;
-
-            margin-bottom: 18px;
-        }
-
-        .option-label {
-
-            display: block;
-
-            margin-bottom: 8px;
-
-            color: #aaa;
-
-            font-size: 14px;
-        }
-
-        select {
-
-            width: 100%;
-
-            padding: 16px;
-
-            border-radius: 16px;
-
-            background: #111;
-
-            color: white;
-
-            border: 2px solid #333;
-
-            font-size: 15px;
-
-            outline: none;
-        }
-
-        select:focus {
-
-            border-color: #ff1493;
-        }
-
-        .format-card {
+        .format-card,
+        .style-card {
 
             border: 2px solid #333;
 
@@ -187,7 +142,8 @@
             background: #111;
         }
 
-        .format-card:hover {
+        .format-card:hover,
+        .style-card:hover {
 
             border-color: #ff1493;
 
@@ -195,7 +151,8 @@
                 rgba(255,20,147,0.06);
         }
 
-        .format-card.active {
+        .format-card.active,
+        .style-card.active {
 
             border-color: #ff1493;
 
@@ -206,7 +163,8 @@
                 rgba(255,20,147,0.12);
         }
 
-        .format-title {
+        .format-title,
+        .style-title {
 
             font-size: 17px;
 
@@ -215,11 +173,90 @@
             margin-bottom: 6px;
         }
 
-        .format-sub {
+        .format-sub,
+        .style-sub {
 
             color: #aaa;
 
             font-size: 13px;
+        }
+
+        .style-preview {
+
+            margin: 14px 0 10px;
+
+            padding: 14px 10px;
+
+            border-radius: 14px;
+
+            background:
+                rgba(255,255,255,0.04);
+
+            border:
+                1px solid rgba(255,255,255,0.07);
+
+            font-size: 18px;
+
+            line-height: 1.3;
+        }
+
+        .muted-word {
+
+            color: white;
+        }
+
+        .active-word {
+
+            text-shadow:
+                0 0 12px currentColor;
+        }
+
+        .classic-preview {
+
+            font-family: Arial, sans-serif;
+
+            font-weight: 800;
+        }
+
+        .classic-preview .active-word {
+
+            color: #ff3cb4;
+        }
+
+        .neon-preview {
+
+            font-family: Arial, sans-serif;
+
+            font-weight: 900;
+
+            letter-spacing: 0.5px;
+        }
+
+        .neon-preview .active-word {
+
+            color: #50aaff;
+
+            text-shadow:
+                0 0 10px #50aaff,
+                0 0 22px #50aaff;
+        }
+
+        .cinematic-preview {
+
+            font-family: Arial Black, Impact, sans-serif;
+
+            font-weight: 900;
+
+            letter-spacing: 1.3px;
+        }
+
+        .cinematic-preview .active-word {
+
+            color: #ffdc46;
+
+            text-shadow:
+                0 0 10px rgba(255,220,70,0.8),
+                0 0 18px rgba(255,220,70,0.45);
         }
 
         .eta-box {
@@ -513,35 +550,6 @@
             line-height: 1.5;
         }
 
-        #lyricPreview {
-
-            margin-top: -4px;
-
-            margin-bottom: 28px;
-
-            padding: 20px;
-
-            border-radius: 18px;
-
-            background:
-                rgba(255,255,255,0.04);
-
-            border:
-                1px solid rgba(255,255,255,0.08);
-
-            text-align: center;
-
-            color: #ff3cb4;
-
-            font-weight: 800;
-
-            font-size: 24px;
-
-            letter-spacing: 0px;
-
-            transition: 0.2s ease;
-        }
-
         @media (max-width: 760px) {
 
             body {
@@ -560,8 +568,8 @@
             }
 
             .format-grid,
-            .upload-grid,
-            .option-grid {
+            .style-grid,
+            .upload-grid {
 
                 grid-template-columns: 1fr;
             }
@@ -669,77 +677,74 @@
         </div>
 
         <h3 class="section-title">
-            Customize lyrics
+            Choose lyric style
         </h3>
 
-        <div class="option-grid">
+        <div class="style-grid">
 
-            <div>
+            <div
+                class="style-card active"
+                onclick="selectStyle('classic')"
+                id="style-classic"
+            >
 
-                <label class="option-label">
-                    Lyric color
-                </label>
+                <div class="style-title">
+                    Classic
+                </div>
 
-                <select
-                    id="lyricColor"
-                    onchange="updateLyricPreview()"
-                >
+                <div class="style-preview classic-preview">
+                    <span class="muted-word">This is my</span>
+                    <span class="active-word">moment</span>
+                </div>
 
-                    <option value="pink">
-                        Pink
-                    </option>
-
-                    <option value="yellow">
-                        Yellow
-                    </option>
-
-                    <option value="blue">
-                        Blue
-                    </option>
-
-                    <option value="green">
-                        Green
-                    </option>
-
-                    <option value="white">
-                        White
-                    </option>
-
-                </select>
+                <div class="style-sub">
+                    Clean white text with pink highlight
+                </div>
 
             </div>
 
-            <div>
+            <div
+                class="style-card"
+                onclick="selectStyle('neon')"
+                id="style-neon"
+            >
 
-                <label class="option-label">
-                    Font style
-                </label>
+                <div class="style-title">
+                    Neon
+                </div>
 
-                <select
-                    id="fontStyle"
-                    onchange="updateLyricPreview()"
-                >
+                <div class="style-preview neon-preview">
+                    <span class="muted-word">Feel the</span>
+                    <span class="active-word">energy</span>
+                </div>
 
-                    <option value="bold">
-                        Bold
-                    </option>
-
-                    <option value="clean">
-                        Clean
-                    </option>
-
-                    <option value="cinematic">
-                        Cinematic
-                    </option>
-
-                </select>
+                <div class="style-sub">
+                    Bright blue glow effect
+                </div>
 
             </div>
 
-        </div>
+            <div
+                class="style-card"
+                onclick="selectStyle('cinematic')"
+                id="style-cinematic"
+            >
 
-        <div id="lyricPreview">
-            This is how lyrics will look
+                <div class="style-title">
+                    Cinematic
+                </div>
+
+                <div class="style-preview cinematic-preview">
+                    <span class="muted-word">One last</span>
+                    <span class="active-word">chance</span>
+                </div>
+
+                <div class="style-sub">
+                    Premium gold cinematic look
+                </div>
+
+            </div>
+
         </div>
 
         <h3 class="section-title">
@@ -871,7 +876,7 @@
 
 </div>
 
-<script src="/app.js?v=7"></script>
+<script src="/app.js?v=8"></script>
 
 </body>
 </html>
