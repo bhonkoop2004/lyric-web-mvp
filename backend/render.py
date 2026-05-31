@@ -140,9 +140,14 @@ def transcribe_audio(audio_path):
         fp16=False,
         temperature=0,
         condition_on_previous_text=True,
+        compression_ratio_threshold=2.4,
+        logprob_threshold=-1.0,
+        no_speech_threshold=0.6,
         initial_prompt=(
             "These are song lyrics. "
-            "Transcribe exactly what is sung."
+            "Transcribe exactly what is sung. "
+            "Do not translate. "
+            "Keep repeated words and slang."
         )
     )
 
