@@ -251,6 +251,7 @@ async function generate() {
         form.append("video_format", selectedFormat)
         form.append("lyric_color", styleValues.lyricColor)
         form.append("font_style", styleValues.fontStyle)
+        form.append("style", selectedStyle)
 
         const response = await fetch(
             API_BASE + "/generate",

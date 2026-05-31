@@ -134,17 +134,17 @@ def transcribe_audio(audio_path):
     print("Transcribing lyrics automatically...")
 
     result = model.transcribe(
-    audio_path,
-    task="transcribe",
-    word_timestamps=True,
-    fp16=False,
-    temperature=0,
-    condition_on_previous_text=True,
-    initial_prompt=(
-        "These are song lyrics. "
-        "Transcribe exactly what is sung."
+        audio_path,
+        task="transcribe",
+        word_timestamps=True,
+        fp16=False,
+        temperature=0,
+        condition_on_previous_text=True,
+        initial_prompt=(
+            "These are song lyrics. "
+            "Transcribe exactly what is sung."
+        )
     )
-)
 
     words = []
 
