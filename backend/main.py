@@ -1,3 +1,4 @@
+from click import style
 from fastapi import FastAPI, UploadFile, BackgroundTasks, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -29,7 +30,30 @@ app.mount("/outputs", StaticFiles(directory=OUTPUT_DIR), name="outputs")
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 jobs = {}
+import json
 
+STATS_FILE = "backend/stats.json"
+
+def load_stats():
+    with open(STATS_FILE, "r") as f:
+        return json.load(f)
+
+def save_stats(stats):
+    with open(STATS_FILE, "w") as f:
+        json.dump(stats, f, indent=4)
+
+def increment_stat(name):
+    stats = load_stats()
+    stats[name] += 1
+    save_stats(stats)
+
+def increment_style(style):
+    stats = load_stats()
+
+    if style in stats["styles"]:
+        stats["styles"][style] += 1
+
+    save_stats(stats)
 
 @app.get("/")
 def homepage():
@@ -67,6 +91,8 @@ def run_render_job(
         jobs[job_id]["status"] = "done"
         jobs[job_id]["video_url"] = f"/outputs/{job_id}.mp4"
 
+        increment_stat("videos_created")
+
     except Exception as e:
         jobs[job_id]["status"] = "error"
         jobs[job_id]["error"] = str(e)
@@ -81,7 +107,8 @@ async def generate(
     video_format: str = Form("youtube"),
     lyric_language: str = Form("auto"),
     lyric_color: str = Form("pink"),
-    font_style: str = Form("bold")
+    font_style: str = Form("bold"),
+    style: str = Form("classic")
 ):
     job_id = str(uuid.uuid4())
 
@@ -100,6 +127,8 @@ async def generate(
         "video_url": None,
         "error": None
     }
+    increment_stat("uploads")
+    increment_style(style)
 
     background_tasks.add_task(
         run_render_job,
@@ -126,3 +155,15 @@ def status(job_id: str):
         }
 
     return jobs[job_id]
+@app.get("/track-download")
+def track_download():
+    increment_stat("downloads")
+
+    return {
+        "success": True
+    }
+
+
+@app.get("/stats")
+def stats():
+    return load_stats()
