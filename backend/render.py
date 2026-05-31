@@ -123,7 +123,7 @@ def get_whisper_model():
 
     if WHISPER_MODEL is None:
         print("Loading Whisper model...")
-        WHISPER_MODEL = whisper.load_model("base")
+        WHISPER_MODEL = whisper.load_model("medium")
 
     return WHISPER_MODEL
 
@@ -134,13 +134,17 @@ def transcribe_audio(audio_path):
     print("Transcribing lyrics automatically...")
 
     result = model.transcribe(
-        audio_path,
-        language=None,
-        task="transcribe",
-        word_timestamps=True,
-        fp16=False,
-        initial_prompt=None
+    audio_path,
+    task="transcribe",
+    word_timestamps=True,
+    fp16=False,
+    temperature=0,
+    condition_on_previous_text=True,
+    initial_prompt=(
+        "These are song lyrics. "
+        "Transcribe exactly what is sung."
     )
+)
 
     words = []
 
