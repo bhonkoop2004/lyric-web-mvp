@@ -170,7 +170,11 @@ def transcribe_audio(audio_path):
 
     return words
 
-def build_lyrics_from_text(lyrics_text, audio_duration):
+def build_lyrics_from_text(
+    lyrics_text,
+    audio_duration,
+    timing_words=None
+):
     raw_words = lyrics_text.replace("\n", " ").split()
 
     words = []
@@ -178,10 +182,42 @@ def build_lyrics_from_text(lyrics_text, audio_duration):
     if not raw_words:
         return words
 
+    if timing_words and len(timing_words) > 0:
+
+        for i, word in enumerate(raw_words):
+
+            if i < len(timing_words):
+
+                start = timing_words[i]["start"]
+                end = timing_words[i]["end"]
+
+            else:
+
+                previous_end = (
+                    words[-1]["end"]
+                    if words else 0
+                )
+
+                start = previous_end
+                end = start + 0.35
+
+            words.append({
+                "word": word,
+                "start": float(start),
+                "end": float(end)
+            })
+
+        return words
+
     usable_duration = max(audio_duration - 0.5, 1)
-    word_duration = usable_duration / len(raw_words)
+
+    word_duration = (
+        usable_duration /
+        len(raw_words)
+    )
 
     for i, word in enumerate(raw_words):
+
         start = i * word_duration
         end = start + word_duration * 0.9
 
@@ -212,15 +248,26 @@ def render_video(
     audio = AudioFileClip(audio_path)
 
     if lyrics_text.strip():
-        print("Using pasted lyrics text.")
+
+        print(
+            "Using pasted lyrics text with Whisper timing."
+        )
+
+        timing_words = transcribe_audio(
+            audio_path
+        )
 
         lyrics = build_lyrics_from_text(
             lyrics_text,
-            audio.duration
+            audio.duration,
+            timing_words
         )
 
     else:
-        lyrics = transcribe_audio(audio_path)
+
+        lyrics = transcribe_audio(
+            audio_path
+        )
 
     bg_original = Image.open(bg_path).convert("RGB")
 
