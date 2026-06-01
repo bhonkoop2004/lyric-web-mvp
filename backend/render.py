@@ -13,8 +13,8 @@ FPS = 24
 FONT_SIZE = 65
 LINE_HEIGHT = 80
 
-MAX_WORDS = 7
-MAX_CHARS = 34
+MAX_WORDS = 10
+MAX_CHARS = 52
 
 SHADOW_OFFSET = 5
 PARTICLE_COUNT = 25
@@ -417,7 +417,7 @@ def render_video(
             lines = []
             current = []
 
-            words_per_line = 3 if video_format == "tiktok" else 4
+            words_per_line = 4 if video_format == "tiktok" else 5
 
             for w in sentence:
                 current.append(w)
@@ -477,7 +477,24 @@ def render_video(
 
                 txt = w["word"] + " "
 
-                progress = 1 if i == active else 0
+                progress = 0
+
+                if i == active:
+                    word_duration = max(
+                        w["end"] - w["start"],
+                        0.01
+                    )
+
+                    progress = (
+                        t - w["start"]
+                    ) / word_duration
+
+                    progress = max(
+                        0,
+                        min(progress, 1)
+                    )
+
+                    progress = progress * progress * (3 - 2 * progress)
 
                 c = color(progress)
 
