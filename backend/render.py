@@ -10,11 +10,11 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 FPS = 24
 
-FONT_SIZE = 65
+FONT_SIZE = 60
 LINE_HEIGHT = 80
 
-MAX_WORDS = 10
-MAX_CHARS = 52
+MAX_WORDS = 14
+MAX_CHARS = 72
 
 SHADOW_OFFSET = 5
 PARTICLE_COUNT = 25
@@ -332,7 +332,7 @@ def render_video(
             elif chars >= MAX_CHARS:
                 should_split = True
 
-            elif gap > 0.45:
+            elif gap > 0.85:
                 should_split = True
 
             elif is_last:
@@ -417,7 +417,7 @@ def render_video(
             lines = []
             current = []
 
-            words_per_line = 4 if video_format == "tiktok" else 5
+            words_per_line = 5 if video_format == "tiktok" else 7
 
             for w in sentence:
                 current.append(w)
@@ -477,34 +477,37 @@ def render_video(
 
                 txt = w["word"] + " "
 
-                progress = 0
+            progress = 0
 
-                if i == active:
-                    word_duration = max(
-                        w["end"] - w["start"],
-                        0.01
-                    )
+            fade_in = 0.35
+            fade_out = 0.45
 
-                    fade_duration = min(
-                        0.75,
-                        word_duration
-                    )
+            if i == active:
 
-                    progress = (
-                        t - w["start"]
-                    ) / fade_duration
+                since_start = t - w["start"]
+                until_end = w["end"] - t
 
-                    progress = max(
-                        0,
-                        min(progress, 1)
-                    )
+                fade_in_progress = min(
+                    1,
+                    max(0, since_start / fade_in)
+                )
 
-                    progress = progress * progress * (3 - 2 * progress)
+                fade_out_progress = min(
+                    1,
+                    max(0, until_end / fade_out)
+                )
 
-                elif i < active:
-                    progress = 0.85
+                progress = min(
+                    fade_in_progress,
+                    fade_out_progress
+                )
 
-                c = color(progress)
+                progress = (
+                    progress * progress *
+                    (3 - 2 * progress)
+                )
+
+            c = color(progress)
 
                 draw.text(
                     (
