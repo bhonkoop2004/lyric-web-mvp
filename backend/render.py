@@ -485,9 +485,14 @@ def render_video(
                         0.01
                     )
 
+                    fade_duration = min(
+                        0.75,
+                        word_duration
+                    )
+
                     progress = (
                         t - w["start"]
-                    ) / word_duration
+                    ) / fade_duration
 
                     progress = max(
                         0,
@@ -495,6 +500,9 @@ def render_video(
                     )
 
                     progress = progress * progress * (3 - 2 * progress)
+
+                elif i < active:
+                    progress = 0.85
 
                 c = color(progress)
 
