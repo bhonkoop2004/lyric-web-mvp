@@ -170,6 +170,28 @@ def transcribe_audio(audio_path):
 
     return words
 
+def build_lyrics_from_text(lyrics_text, audio_duration):
+    raw_words = lyrics_text.replace("\n", " ").split()
+
+    words = []
+
+    if not raw_words:
+        return words
+
+    usable_duration = max(audio_duration - 0.5, 1)
+    word_duration = usable_duration / len(raw_words)
+
+    for i, word in enumerate(raw_words):
+        start = i * word_duration
+        end = start + word_duration * 0.9
+
+        words.append({
+            "word": word,
+            "start": float(start),
+            "end": float(end)
+        })
+
+    return words
 
 def render_video(
     audio_path,
@@ -178,7 +200,8 @@ def render_video(
     video_format="youtube",
     lyric_language="auto",
     lyric_color="pink",
-    font_style="bold"
+    font_style="bold",
+    lyrics_text=""
 ):
 
     W, H = get_video_size(video_format)
@@ -188,6 +211,15 @@ def render_video(
 
     audio = AudioFileClip(audio_path)
 
+    if lyrics_text.strip():
+    print("Using pasted lyrics text.")
+
+    lyrics = build_lyrics_from_text(
+        lyrics_text,
+        audio.duration
+    )
+
+else:
     lyrics = transcribe_audio(audio_path)
 
     bg_original = Image.open(bg_path).convert("RGB")
@@ -214,14 +246,19 @@ def render_video(
     for i, w in enumerate(lyrics):
         dur = w["end"] - w["start"]
 
-        if dur < 0.22:
-            w["end"] += 0.08
+        if dur < 0.18:
+            w["end"] = w["start"] + 0.18
 
-            if i < len(lyrics) - 1:
-                nxt = lyrics[i + 1]["start"]
+        if i < len(lyrics) - 1:
+            next_start = lyrics[i + 1]["start"]
 
-                if w["end"] > nxt:
-                    w["end"] = nxt - 0.01
+            if w["end"] > next_start:
+                w["end"] = next_start - 0.02
+
+            gap = next_start - w["end"]
+
+            if 0.02 < gap < 0.18:
+                w["end"] = next_start - 0.02
 
     def split_sentences(words):
         sentences = []

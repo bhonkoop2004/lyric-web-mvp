@@ -234,6 +234,9 @@ async function generate() {
 
         const styleValues = getStyleValues()
 
+        const lyricsText =
+            document.getElementById("lyricsInput").value
+
         document.getElementById("status").innerText =
             "Uploading files... Estimated time: " +
             document.getElementById("etaText").innerText
@@ -252,6 +255,11 @@ async function generate() {
         form.append("lyric_color", styleValues.lyricColor)
         form.append("font_style", styleValues.fontStyle)
         form.append("style", selectedStyle)
+
+        form.append(
+            "lyrics_text",
+            lyricsText
+        )
 
         const response = await fetch(
             API_BASE + "/generate",

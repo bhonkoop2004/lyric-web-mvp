@@ -479,7 +479,62 @@
             box-shadow:
                 0 0 30px rgba(255,20,147,0.2);
         }
+                .lyrics-box {
 
+            margin-bottom: 24px;
+        }
+
+        .lyrics-label {
+
+            display: block;
+
+            margin-bottom: 8px;
+
+            color: #ddd;
+
+            font-size: 15px;
+
+            font-weight: bold;
+        }
+
+        #lyricsInput {
+
+            width: 100%;
+
+            min-height: 130px;
+
+            resize: vertical;
+
+            padding: 16px;
+
+            border-radius: 18px;
+
+            background: #111;
+
+            color: white;
+
+            border: 2px solid #333;
+
+            font-size: 15px;
+
+            line-height: 1.5;
+
+            outline: none;
+        }
+
+        #lyricsInput:focus {
+
+            border-color: #ff1493;
+        }
+
+        .lyrics-help {
+
+            margin-top: 8px;
+
+            color: #888;
+
+            font-size: 13px;
+        }
         .generate-button {
 
             width: 100%;
@@ -955,6 +1010,23 @@
             class="preview"
             id="preview"
         ></div>
+
+        <div class="lyrics-box">
+
+            <label class="lyrics-label">
+                Optional lyrics
+            </label>
+
+            <textarea
+                id="lyricsInput"
+                placeholder="Paste lyrics here for perfect accuracy. Leave empty to let AI detect lyrics automatically."
+            ></textarea>
+
+            <div class="lyrics-help">
+                Pro tip: paste the real lyrics if you want fewer mistakes.
+            </div>
+
+        </div>
 
         <button
             class="generate-button"

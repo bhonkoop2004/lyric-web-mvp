@@ -1,4 +1,3 @@
-from click import style
 from fastapi import FastAPI, UploadFile, BackgroundTasks, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -73,8 +72,9 @@ def run_render_job(
     video_format,
     lyric_language,
     lyric_color,
-    font_style
-):
+    font_style,
+    lyrics_text
+    ):
     try:
         jobs[job_id]["status"] = "transcribing"
 
@@ -85,7 +85,8 @@ def run_render_job(
             video_format,
             lyric_language,
             lyric_color,
-            font_style
+            font_style,
+            lyrics_text
         )
 
         jobs[job_id]["status"] = "done"
@@ -108,7 +109,8 @@ async def generate(
     lyric_language: str = Form("auto"),
     lyric_color: str = Form("pink"),
     font_style: str = Form("bold"),
-    style: str = Form("classic")
+    style: str = Form("classic"),
+    lyrics_text: str = Form("")
 ):
     job_id = str(uuid.uuid4())
 
@@ -139,7 +141,8 @@ async def generate(
         video_format,
         lyric_language,
         lyric_color,
-        font_style
+        font_style,
+        lyrics_text
     )
 
     return {
