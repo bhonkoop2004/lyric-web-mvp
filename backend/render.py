@@ -212,15 +212,15 @@ def render_video(
     audio = AudioFileClip(audio_path)
 
     if lyrics_text.strip():
-    print("Using pasted lyrics text.")
+        print("Using pasted lyrics text.")
 
-    lyrics = build_lyrics_from_text(
-        lyrics_text,
-        audio.duration
-    )
+        lyrics = build_lyrics_from_text(
+            lyrics_text,
+            audio.duration
+        )
 
-else:
-    lyrics = transcribe_audio(audio_path)
+    else:
+        lyrics = transcribe_audio(audio_path)
 
     bg_original = Image.open(bg_path).convert("RGB")
 
