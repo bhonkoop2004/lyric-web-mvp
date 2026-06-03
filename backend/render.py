@@ -312,9 +312,29 @@ def render_video(
         current = []
         chars = 0
 
+        MIN_WORDS = 8
+        CONNECTORS = [
+            "and",
+            "but",
+            "or",
+            "so",
+            "cause",
+            "because",
+            "that",
+            "when",
+            "where",
+            "with",
+            "to",
+            "of",
+            "in",
+            "on",
+            "for",
+            "the",
+            "a"
+        ]
+
         for i, w in enumerate(words):
             current.append(w)
-
             chars += len(w["word"]) + 1
 
             is_last = i == len(words) - 1
@@ -324,28 +344,44 @@ def render_video(
                 if not is_last else 0
             )
 
+            word_text = w["word"].strip()
+            next_word = (
+                words[i + 1]["word"].lower().strip(".,!?;:")
+                if not is_last else ""
+            )
+
             should_split = False
 
-            if len(current) >= MAX_WORDS:
+            if is_last:
                 should_split = True
 
-            elif chars >= MAX_CHARS:
+            elif (
+                word_text.endswith((".", "!", "?"))
+                and len(current) >= MIN_WORDS
+            ):
                 should_split = True
 
-            elif gap > 1.4 and len(current) >= 5:
+            elif (
+                gap > 1.7
+                and len(current) >= MIN_WORDS
+            ):
                 should_split = True
 
-            elif is_last:
+            elif (
+                len(current) >= MAX_WORDS
+                or chars >= MAX_CHARS
+            ):
                 should_split = True
+
+            if should_split and next_word in CONNECTORS:
+                should_split = False
 
             if should_split:
                 sentences.append(current)
-
                 current = []
                 chars = 0
 
         return sentences
-
     sentences = split_sentences(lyrics)
 
     random.seed(10)
@@ -413,17 +449,31 @@ def render_video(
 
             fade_time = 0.45
 
-            visible_start = start - fade_time
-            visible_end = end + fade_time
+            visible_start = start - safe_fade
+            visible_end = end + safe_fade
 
             if not (visible_start <= t <= visible_end):
                 continue
 
+            sentence_duration = max(
+                end - start,
+                0.01
+            )
+
+            safe_fade = min(
+                fade_time,
+                sentence_duration / 3
+            )
+
             if t < start:
-                sentence_alpha = (t - visible_start) / fade_time
+                sentence_alpha = (
+                    t - visible_start
+                ) / safe_fade
 
             elif t > end:
-                sentence_alpha = (visible_end - t) / fade_time
+                sentence_alpha = (
+                    visible_end - t
+                ) / safe_fade
 
             else:
                 sentence_alpha = 1
