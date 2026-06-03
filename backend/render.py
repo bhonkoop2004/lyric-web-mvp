@@ -13,8 +13,8 @@ FPS = 24
 FONT_SIZE = 60
 LINE_HEIGHT = 80
 
-MAX_WORDS = 14
-MAX_CHARS = 72
+MAX_WORDS = 16
+MAX_CHARS = 90
 
 SHADOW_OFFSET = 5
 PARTICLE_COUNT = 25
@@ -332,7 +332,7 @@ def render_video(
             elif chars >= MAX_CHARS:
                 should_split = True
 
-            elif gap > 0.85:
+            elif gap > 1.4 and len(current) >= 5:
                 should_split = True
 
             elif is_last:
@@ -411,8 +411,27 @@ def render_video(
             start = sentence[0]["start"]
             end = sentence[-1]["end"]
 
-            if not (start <= t <= end):
+            fade_time = 0.45
+
+            visible_start = start - fade_time
+            visible_end = end + fade_time
+
+            if not (visible_start <= t <= visible_end):
                 continue
+
+            if t < start:
+                sentence_alpha = (t - visible_start) / fade_time
+
+            elif t > end:
+                sentence_alpha = (visible_end - t) / fade_time
+
+            else:
+                sentence_alpha = 1
+
+            sentence_alpha = max(
+                0,
+                min(sentence_alpha, 1)
+            )
 
             lines = []
             current = []
@@ -509,22 +528,27 @@ def render_video(
 
             c = color(progress)
 
-                draw.text(
-                    (
-                        x + SHADOW_OFFSET,
-                        y + SHADOW_OFFSET
-                    ),
-                    txt,
-                    font=selected_font,
-                    fill=(0, 0, 0)
-                )
+            draw.text(
+                (
+                    x + SHADOW_OFFSET,
+                    y + SHADOW_OFFSET
+                ),
+                txt,
+                font=selected_font,
+                fill=(0, 0, 0, int(255 * sentence_alpha))
+            )
 
-                draw.text(
-                    (x, y),
-                    txt,
-                    font=selected_font,
-                    fill=c
+            draw.text(
+                (x, y),
+                txt,
+                font=selected_font,
+                fill=(
+                    c[0],
+                    c[1],
+                    c[2],
+                    int(255 * sentence_alpha)
                 )
+            )
 
         return np.array(frame.convert("RGB"))
 
