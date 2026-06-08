@@ -449,12 +449,6 @@ def render_video(
 
             fade_time = 0.45
 
-            visible_start = start - safe_fade
-            visible_end = end + safe_fade
-
-            if not (visible_start <= t <= visible_end):
-                continue
-
             sentence_duration = max(
                 end - start,
                 0.01
@@ -464,6 +458,12 @@ def render_video(
                 fade_time,
                 sentence_duration / 3
             )
+
+            visible_start = start - safe_fade
+            visible_end = end + safe_fade
+
+            if not (visible_start <= t <= visible_end):
+                continue
 
             if t < start:
                 sentence_alpha = (
@@ -546,59 +546,59 @@ def render_video(
 
                 txt = w["word"] + " "
 
-            progress = 0
+                progress = 0
 
-            fade_in = 0.35
-            fade_out = 0.45
+                fade_in = 0.35
+                fade_out = 0.45
 
-            if i == active:
+                if i == active:
 
-                since_start = t - w["start"]
-                until_end = w["end"] - t
+                    since_start = t - w["start"]
+                    until_end = w["end"] - t
 
-                fade_in_progress = min(
-                    1,
-                    max(0, since_start / fade_in)
+                    fade_in_progress = min(
+                        1,
+                        max(0, since_start / fade_in)
+                    )
+
+                    fade_out_progress = min(
+                        1,
+                        max(0, until_end / fade_out)
+                    )
+
+                    progress = min(
+                        fade_in_progress,
+                        fade_out_progress
+                    )
+
+                    progress = (
+                        progress * progress *
+                        (3 - 2 * progress)
+                    )
+
+                c = color(progress)
+
+                draw.text(
+                    (
+                        x + SHADOW_OFFSET,
+                        y + SHADOW_OFFSET
+                    ),
+                    txt,
+                    font=selected_font,
+                    fill=(0, 0, 0, int(255 * sentence_alpha))
                 )
 
-                fade_out_progress = min(
-                    1,
-                    max(0, until_end / fade_out)
+                draw.text(
+                    (x, y),
+                    txt,
+                    font=selected_font,
+                    fill=(
+                        c[0],
+                        c[1],
+                        c[2],
+                        int(255 * sentence_alpha)
+                    )
                 )
-
-                progress = min(
-                    fade_in_progress,
-                    fade_out_progress
-                )
-
-                progress = (
-                    progress * progress *
-                    (3 - 2 * progress)
-                )
-
-            c = color(progress)
-
-            draw.text(
-                (
-                    x + SHADOW_OFFSET,
-                    y + SHADOW_OFFSET
-                ),
-                txt,
-                font=selected_font,
-                fill=(0, 0, 0, int(255 * sentence_alpha))
-            )
-
-            draw.text(
-                (x, y),
-                txt,
-                font=selected_font,
-                fill=(
-                    c[0],
-                    c[1],
-                    c[2],
-                    int(255 * sentence_alpha)
-                )
-            )
 
         return np.array(frame.convert("RGB"))
 
