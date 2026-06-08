@@ -13,8 +13,8 @@ FPS = 24
 FONT_SIZE = 60
 LINE_HEIGHT = 80
 
-MAX_WORDS = 16
-MAX_CHARS = 90
+MAX_WORDS = 14
+MAX_CHARS = 80
 
 SHADOW_OFFSET = 5
 PARTICLE_COUNT = 25
@@ -88,9 +88,6 @@ def load_font(size, font_style="bold"):
 
     print("WARNING: fallback tiny font used")
     return ImageFont.load_default()
-
-
-font = load_font(FONT_SIZE, "bold")
 
 
 def get_video_size(video_format):
@@ -170,6 +167,7 @@ def transcribe_audio(audio_path):
 
     return words
 
+
 def build_lyrics_from_text(
     lyrics_text,
     audio_duration,
@@ -183,16 +181,12 @@ def build_lyrics_from_text(
         return words
 
     if timing_words and len(timing_words) > 0:
-
         for i, word in enumerate(raw_words):
-
             if i < len(timing_words):
-
                 start = timing_words[i]["start"]
                 end = timing_words[i]["end"]
 
             else:
-
                 previous_end = (
                     words[-1]["end"]
                     if words else 0
@@ -217,7 +211,6 @@ def build_lyrics_from_text(
     )
 
     for i, word in enumerate(raw_words):
-
         start = i * word_duration
         end = start + word_duration * 0.9
 
@@ -229,6 +222,86 @@ def build_lyrics_from_text(
 
     return words
 
+
+def split_sentences(words):
+    sentences = []
+    current = []
+    chars = 0
+
+    min_words = 6
+
+    connectors = [
+        "and",
+        "but",
+        "or",
+        "so",
+        "cause",
+        "because",
+        "that",
+        "when",
+        "where",
+        "with",
+        "to",
+        "of",
+        "in",
+        "on",
+        "for",
+        "the",
+        "a"
+    ]
+
+    for i, w in enumerate(words):
+        current.append(w)
+        chars += len(w["word"]) + 1
+
+        is_last = i == len(words) - 1
+
+        gap = (
+            words[i + 1]["start"] - w["end"]
+            if not is_last else 0
+        )
+
+        word_text = w["word"].strip()
+
+        next_word = (
+            words[i + 1]["word"].lower().strip(".,!?;:")
+            if not is_last else ""
+        )
+
+        should_split = False
+
+        if is_last:
+            should_split = True
+
+        elif (
+            word_text.endswith((".", "!", "?"))
+            and len(current) >= min_words
+        ):
+            should_split = True
+
+        elif (
+            gap > 1.25
+            and len(current) >= min_words
+        ):
+            should_split = True
+
+        elif (
+            len(current) >= MAX_WORDS
+            or chars >= MAX_CHARS
+        ):
+            should_split = True
+
+        if should_split and next_word in connectors:
+            should_split = False
+
+        if should_split:
+            sentences.append(current)
+            current = []
+            chars = 0
+
+    return sentences
+
+
 def render_video(
     audio_path,
     bg_path,
@@ -237,9 +310,9 @@ def render_video(
     lyric_language="auto",
     lyric_color="pink",
     font_style="bold",
-    lyrics_text=""
+    lyrics_text="",
+    text_position="center"
 ):
-
     W, H = get_video_size(video_format)
 
     active_color = get_active_color(lyric_color)
@@ -248,10 +321,7 @@ def render_video(
     audio = AudioFileClip(audio_path)
 
     if lyrics_text.strip():
-
-        print(
-            "Using pasted lyrics text with Whisper timing."
-        )
+        print("Using pasted lyrics text with Whisper timing.")
 
         timing_words = transcribe_audio(
             audio_path
@@ -264,7 +334,6 @@ def render_video(
         )
 
     else:
-
         lyrics = transcribe_audio(
             audio_path
         )
@@ -293,8 +362,8 @@ def render_video(
     for i, w in enumerate(lyrics):
         dur = w["end"] - w["start"]
 
-        if dur < 0.18:
-            w["end"] = w["start"] + 0.18
+        if dur < 0.25:
+            w["end"] = w["start"] + 0.25
 
         if i < len(lyrics) - 1:
             next_start = lyrics[i + 1]["start"]
@@ -302,86 +371,6 @@ def render_video(
             if w["end"] > next_start:
                 w["end"] = next_start - 0.02
 
-            gap = next_start - w["end"]
-
-            if 0.02 < gap < 0.18:
-                w["end"] = next_start - 0.02
-
-    def split_sentences(words):
-        sentences = []
-        current = []
-        chars = 0
-
-        MIN_WORDS = 8
-        CONNECTORS = [
-            "and",
-            "but",
-            "or",
-            "so",
-            "cause",
-            "because",
-            "that",
-            "when",
-            "where",
-            "with",
-            "to",
-            "of",
-            "in",
-            "on",
-            "for",
-            "the",
-            "a"
-        ]
-
-        for i, w in enumerate(words):
-            current.append(w)
-            chars += len(w["word"]) + 1
-
-            is_last = i == len(words) - 1
-
-            gap = (
-                words[i + 1]["start"] - w["end"]
-                if not is_last else 0
-            )
-
-            word_text = w["word"].strip()
-            next_word = (
-                words[i + 1]["word"].lower().strip(".,!?;:")
-                if not is_last else ""
-            )
-
-            should_split = False
-
-            if is_last:
-                should_split = True
-
-            elif (
-                word_text.endswith((".", "!", "?"))
-                and len(current) >= MIN_WORDS
-            ):
-                should_split = True
-
-            elif (
-                gap > 1.7
-                and len(current) >= MIN_WORDS
-            ):
-                should_split = True
-
-            elif (
-                len(current) >= MAX_WORDS
-                or chars >= MAX_CHARS
-            ):
-                should_split = True
-
-            if should_split and next_word in CONNECTORS:
-                should_split = False
-
-            if should_split:
-                sentences.append(current)
-                current = []
-                chars = 0
-
-        return sentences
     sentences = split_sentences(lyrics)
 
     random.seed(10)
@@ -395,21 +384,6 @@ def render_video(
             "speed": random.uniform(0.5, 1.5),
             "size": random.randint(1, 2)
         })
-
-    def lerp(a, b, t):
-        return int(a + (b - a) * t)
-
-    def color(progress):
-        progress = max(
-            progress,
-            0.18
-        )
-
-        return (
-            lerp(255, active_color[0], progress),
-            lerp(255, active_color[1], progress),
-            lerp(255, active_color[2], progress)
-        )
 
     def make_frame(t):
         frame = static_bg.copy()
@@ -505,16 +479,21 @@ def render_video(
 
             total_h = len(lines) * LINE_HEIGHT
 
-            y0 = (H - total_h) // 2
+            if text_position == "bottom":
+                if video_format == "tiktok":
+                    y0 = int(H * 0.72) - total_h // 2
+                else:
+                    y0 = int(H * 0.74) - total_h // 2
 
-            if video_format == "tiktok":
-                y0 = int(H * 0.48) - total_h // 2
+            else:
+                y0 = (H - total_h) // 2
 
-            positions = []
+                if video_format == "tiktok":
+                    y0 = int(H * 0.48) - total_h // 2
 
             for li, line in enumerate(lines):
-                txt = "".join(
-                    [w["word"] + " " for w in line]
+                txt = " ".join(
+                    [w["word"] for w in line]
                 )
 
                 bbox = draw.textbbox(
@@ -528,60 +507,8 @@ def render_video(
                 x = (W - tw) // 2
                 y = y0 + li * LINE_HEIGHT
 
-                for w in line:
-                    positions.append((x, y))
-
-                    bbox = draw.textbbox(
-                        (0, 0),
-                        w["word"] + " ",
-                        font=selected_font
-                    )
-
-                    x += bbox[2] - bbox[0]
-
-            active = -1
-
-            for i, w in enumerate(sentence):
-                if w["start"] <= t <= w["end"]:
-                    active = i
-                    break
-
-            for i, w in enumerate(sentence):
-                x, y = positions[i]
-
-                txt = w["word"] + " "
-
-                progress = 0
-
-                fade_in = 0.18
-                fade_out = 0.25
-
-                if i == active:
-
-                    since_start = t - w["start"]
-                    until_end = w["end"] - t
-
-                    fade_in_progress = min(
-                        1,
-                        max(0, since_start / fade_in)
-                    )
-
-                    fade_out_progress = min(
-                        1,
-                        max(0, until_end / fade_out)
-                    )
-
-                    progress = min(
-                        fade_in_progress,
-                        fade_out_progress
-                    )
-
-                    progress = (
-                        progress * progress *
-                        (3 - 2 * progress)
-                    )
-
-                c = color(progress)
+                shadow_alpha = int(220 * sentence_alpha)
+                text_alpha = int(255 * sentence_alpha)
 
                 draw.text(
                     (
@@ -590,7 +517,7 @@ def render_video(
                     ),
                     txt,
                     font=selected_font,
-                    fill=(0, 0, 0, int(255 * sentence_alpha))
+                    fill=(0, 0, 0, shadow_alpha)
                 )
 
                 draw.text(
@@ -598,10 +525,10 @@ def render_video(
                     txt,
                     font=selected_font,
                     fill=(
-                        c[0],
-                        c[1],
-                        c[2],
-                        int(255 * sentence_alpha)
+                        active_color[0],
+                        active_color[1],
+                        active_color[2],
+                        text_alpha
                     )
                 )
 

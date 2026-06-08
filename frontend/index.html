@@ -112,7 +112,8 @@
         }
 
         .format-grid,
-        .style-grid {
+        .style-grid,
+        .position-grid {
 
             display: grid;
 
@@ -124,8 +125,15 @@
             margin-bottom: 28px;
         }
 
+        .position-grid {
+
+            grid-template-columns:
+                repeat(2, 1fr);
+        }
+
         .format-card,
-        .style-card {
+        .style-card,
+        .position-card {
 
             border: 2px solid #333;
 
@@ -143,7 +151,8 @@
         }
 
         .format-card:hover,
-        .style-card:hover {
+        .style-card:hover,
+        .position-card:hover {
 
             border-color: #ff1493;
 
@@ -152,7 +161,8 @@
         }
 
         .format-card.active,
-        .style-card.active {
+        .style-card.active,
+        .position-card.active {
 
             border-color: #ff1493;
 
@@ -163,37 +173,39 @@
                 rgba(255,20,147,0.12);
         }
 
-.popular-badge {
+        .popular-badge {
 
-    display: inline-block;
+            display: inline-block;
 
-    margin-bottom: 10px;
+            margin-bottom: 10px;
 
-    padding: 4px 10px;
+            padding: 4px 10px;
 
-    border-radius: 999px;
+            border-radius: 999px;
 
-    background: rgba(255,20,147,0.18);
+            background: rgba(255,20,147,0.18);
 
-    color: #ff9bd2;
+            color: #ff9bd2;
 
-    font-size: 12px;
+            font-size: 12px;
 
-    font-weight: bold;
-}
+            font-weight: bold;
+        }
 
-.format-title,
-.style-title {
+        .format-title,
+        .style-title,
+        .position-title {
 
-    font-size: 17px;
+            font-size: 17px;
 
-    font-weight: bold;
+            font-weight: bold;
 
-    margin-bottom: 6px;
-}
+            margin-bottom: 6px;
+        }
 
         .format-sub,
-        .style-sub {
+        .style-sub,
+        .position-sub {
 
             color: #aaa;
 
@@ -479,7 +491,8 @@
             box-shadow:
                 0 0 30px rgba(255,20,147,0.2);
         }
-                .lyrics-box {
+
+        .lyrics-box {
 
             margin-bottom: 24px;
         }
@@ -535,6 +548,7 @@
 
             font-size: 13px;
         }
+
         .generate-button {
 
             width: 100%;
@@ -690,6 +704,7 @@
 
             .format-grid,
             .style-grid,
+            .position-grid,
             .upload-grid {
 
                 grid-template-columns: 1fr;
@@ -814,12 +829,12 @@
                 </div>
 
                 <div class="style-preview minimal-preview">
-                    <span class="muted-word">This is my</span>
-                    <span class="active-word">moment</span>
+                    <span class="muted-word">Clean white</span>
+                    <span class="active-word">lyrics</span>
                 </div>
 
                 <div class="style-sub">
-                    Plain white lyrics, no highlight
+                    Plain white Spotify-style lyrics
                 </div>
 
             </div>
@@ -831,8 +846,9 @@
             >
 
                 <div class="popular-badge">
-    ⭐ Most Popular
-</div>
+                    ⭐ Most Popular
+                </div>
+
                 <div class="style-title">
                     Classic
                 </div>
@@ -843,7 +859,7 @@
                 </div>
 
                 <div class="style-sub">
-                    Clean white text with pink highlight
+                    Most creators choose this style
                 </div>
 
             </div>
@@ -864,7 +880,7 @@
                 </div>
 
                 <div class="style-sub">
-                    Bright blue glow effect
+                    Bright blue glowing lyrics
                 </div>
 
             </div>
@@ -928,6 +944,46 @@
 
                 <div class="style-sub">
                     Fresh green modern look
+                </div>
+
+            </div>
+
+        </div>
+
+        <h3 class="section-title">
+            Choose lyric position
+        </h3>
+
+        <div class="position-grid">
+
+            <div
+                class="position-card active"
+                onclick="selectPosition('center')"
+                id="position-center"
+            >
+
+                <div class="position-title">
+                    Center
+                </div>
+
+                <div class="position-sub">
+                    Lyrics appear in the middle
+                </div>
+
+            </div>
+
+            <div
+                class="position-card"
+                onclick="selectPosition('bottom')"
+                id="position-bottom"
+            >
+
+                <div class="position-title">
+                    Bottom
+                </div>
+
+                <div class="position-sub">
+                    Subtitle-style lower placement
                 </div>
 
             </div>
@@ -1014,16 +1070,16 @@
         <div class="lyrics-box">
 
             <label class="lyrics-label">
-                Optional lyrics
+                Perfect Lyrics Mode
             </label>
 
             <textarea
                 id="lyricsInput"
-                placeholder="Paste lyrics here for perfect accuracy. Leave empty to let AI detect lyrics automatically."
+                placeholder="Paste lyrics here for perfect text accuracy. Leave empty to let AI detect lyrics automatically."
             ></textarea>
 
             <div class="lyrics-help">
-                Pro tip: paste the real lyrics if you want fewer mistakes.
+                Paste the real lyrics if you want the text to be exactly correct.
             </div>
 
         </div>
@@ -1080,7 +1136,7 @@
 
 </div>
 
-<script src="/app.js?v=10"></script>
+<script src="/app.js?v=11"></script>
 
 </body>
 </html>

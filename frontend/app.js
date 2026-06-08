@@ -3,6 +3,7 @@ let fakeProgress = 0
 let progressTimer = null
 let selectedFormat = "youtube"
 let selectedStyle = "classic"
+let selectedPosition = "center"
 let renderStartedAt = null
 
 const API_BASE = window.location.origin
@@ -37,6 +38,15 @@ function selectStyle(style) {
     document.getElementById("style-emerald").classList.remove("active")
 
     document.getElementById("style-" + style).classList.add("active")
+}
+
+function selectPosition(position) {
+    selectedPosition = position
+
+    document.getElementById("position-center").classList.remove("active")
+    document.getElementById("position-bottom").classList.remove("active")
+
+    document.getElementById("position-" + position).classList.add("active")
 }
 
 function getStyleValues() {
@@ -255,6 +265,7 @@ async function generate() {
         form.append("lyric_color", styleValues.lyricColor)
         form.append("font_style", styleValues.fontStyle)
         form.append("style", selectedStyle)
+        form.append("text_position", selectedPosition)
 
         form.append(
             "lyrics_text",
@@ -325,14 +336,14 @@ async function checkStatus() {
 
         else if (data.status === "transcribing") {
             document.getElementById("status").innerText =
-                "AI is reading lyrics automatically..."
+                "Preparing synced lyric video..."
 
             setTimeout(checkStatus, 2000)
         }
 
         else if (data.status === "rendering") {
             document.getElementById("status").innerText =
-                "Rendering cinematic lyric video..."
+                "Rendering Spotify-style lyric video..."
 
             setTimeout(checkStatus, 2000)
         }
@@ -344,7 +355,12 @@ async function checkStatus() {
                 "Your video is ready!"
 
             document.getElementById("download").innerHTML =
-                `<a href="${data.video_url}" target="_blank" download>
+                `<a
+                    href="${data.video_url}"
+                    target="_blank"
+                    download
+                    onclick="fetch('/track-download')"
+                >
                     Download Video
                 </a>`
         }

@@ -7,6 +7,7 @@ import shutil
 import uuid
 import os
 import traceback
+import json
 
 from backend.render import render_video
 
@@ -21,6 +22,7 @@ app.add_middleware(
 
 UPLOAD_DIR = "backend/uploads"
 OUTPUT_DIR = "backend/outputs"
+STATS_FILE = "backend/stats.json"
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -29,22 +31,23 @@ app.mount("/outputs", StaticFiles(directory=OUTPUT_DIR), name="outputs")
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 jobs = {}
-import json
 
-STATS_FILE = "backend/stats.json"
 
 def load_stats():
     with open(STATS_FILE, "r") as f:
         return json.load(f)
 
+
 def save_stats(stats):
     with open(STATS_FILE, "w") as f:
         json.dump(stats, f, indent=4)
+
 
 def increment_stat(name):
     stats = load_stats()
     stats[name] += 1
     save_stats(stats)
+
 
 def increment_style(style):
     stats = load_stats()
@@ -53,6 +56,7 @@ def increment_style(style):
         stats["styles"][style] += 1
 
     save_stats(stats)
+
 
 @app.get("/")
 def homepage():
@@ -73,8 +77,9 @@ def run_render_job(
     lyric_language,
     lyric_color,
     font_style,
-    lyrics_text
-    ):
+    lyrics_text,
+    text_position
+):
     try:
         jobs[job_id]["status"] = "transcribing"
 
@@ -86,7 +91,8 @@ def run_render_job(
             lyric_language,
             lyric_color,
             font_style,
-            lyrics_text
+            lyrics_text,
+            text_position
         )
 
         jobs[job_id]["status"] = "done"
@@ -110,7 +116,8 @@ async def generate(
     lyric_color: str = Form("pink"),
     font_style: str = Form("bold"),
     style: str = Form("classic"),
-    lyrics_text: str = Form("")
+    lyrics_text: str = Form(""),
+    text_position: str = Form("center")
 ):
     job_id = str(uuid.uuid4())
 
@@ -129,6 +136,7 @@ async def generate(
         "video_url": None,
         "error": None
     }
+
     increment_stat("uploads")
     increment_style(style)
 
@@ -142,7 +150,8 @@ async def generate(
         lyric_language,
         lyric_color,
         font_style,
-        lyrics_text
+        lyrics_text,
+        text_position
     )
 
     return {
@@ -158,6 +167,8 @@ def status(job_id: str):
         }
 
     return jobs[job_id]
+
+
 @app.get("/track-download")
 def track_download():
     increment_stat("downloads")
