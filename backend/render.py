@@ -400,6 +400,11 @@ def render_video(
         return int(a + (b - a) * t)
 
     def color(progress):
+        progress = max(
+            progress,
+            0.18
+        )
+
         return (
             lerp(255, active_color[0], progress),
             lerp(255, active_color[1], progress),
@@ -548,8 +553,8 @@ def render_video(
 
                 progress = 0
 
-                fade_in = 0.35
-                fade_out = 0.45
+                fade_in = 0.18
+                fade_out = 0.25
 
                 if i == active:
 
